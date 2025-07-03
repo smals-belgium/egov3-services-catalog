@@ -1,0 +1,889 @@
+openapi: 3.0.3
+info:
+  title: LTDS - Work Remuneration - REST API
+  description: Service that allows to transmit data of work and remuneration calculations
+  version: 0.0.1
+servers:
+- url: https://services.socialsecurity.be/REST/ltds/workRemuneration/v1
+tags:
+- name: Calculation Results
+  description: Information about work and remuneration calculation results
+- name: Monitoring
+  description: Service monitoring
+paths:
+  /calculationResults:
+    post:
+      tags:
+      - Calculation Results
+      summary: Submit work and remuneration calculation results for a relation between
+        an enterprise and a natural person.
+      operationId: submitCalculationResults
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Calculation'
+        required: true
+      responses:
+        "201":
+          description: Created
+          headers:
+            Location:
+              description: Location of calculation results sent
+              style: simple
+              explode: false
+              schema:
+                type: string
+                format: uri
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/InputValidationProblem'
+        "409":
+          description: Conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        "500":
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        default:
+          description: Default response
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      x-oauth2-required-scopes: any
+      x-content-type: application/json
+  /calculationResults/{calculationResultId}:
+    get:
+      tags:
+      - Calculation Results
+      summary: Return work and remuneration calculation results for a given id.
+      operationId: getCalculationResultsById
+      parameters:
+      - name: calculationResultId
+        in: path
+        description: Universally Unique Identifier of a remuneration calculation
+        required: true
+        style: simple
+        explode: false
+        schema:
+          $ref: '#/components/schemas/Uuid'
+      responses:
+        "200":
+          description: The requested resource was found or a search request returns
+            some content
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Calculation'
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/InputValidationProblem'
+        "404":
+          description: The requested resource was not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        "500":
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        default:
+          description: Default response
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      x-oauth2-required-scopes: any
+    put:
+      tags:
+      - Calculation Results
+      summary: Update work and remuneration calculation results by id.
+      operationId: updateCalculationResultsById
+      parameters:
+      - name: calculationResultId
+        in: path
+        description: Universally Unique Identifier of a remuneration calculation
+        required: true
+        style: simple
+        explode: false
+        schema:
+          $ref: '#/components/schemas/Uuid'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Calculation'
+        required: true
+      responses:
+        "204":
+          description: No content
+          headers:
+            Location:
+              description: Location of modified relation
+              style: simple
+              explode: false
+              schema:
+                type: string
+                format: uri
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/InputValidationProblem'
+        "404":
+          description: The requested resource was not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        "500":
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        default:
+          description: Default response
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      x-oauth2-required-scopes: any
+      x-content-type: application/json
+    delete:
+      tags:
+      - Calculation Results
+      summary: Delete work and remuneration calculation results by id.
+      operationId: cancelCalculationResultsById
+      parameters:
+      - name: calculationResultId
+        in: path
+        description: Universally Unique Identifier of a remuneration calculation
+        required: true
+        style: simple
+        explode: false
+        schema:
+          $ref: '#/components/schemas/Uuid'
+      responses:
+        "204":
+          description: No content
+        "400":
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/InputValidationProblem'
+        "404":
+          description: The requested resource was not found.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        "500":
+          description: Internal server error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        default:
+          description: Default response
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      x-oauth2-required-scopes: any
+  /health:
+    get:
+      tags:
+      - Monitoring
+      summary: Check health of the service
+      externalDocs:
+        url: https://www.belgif.be/specification/rest/api-guide/#health
+      operationId: checkHealth
+      responses:
+        "200":
+          description: The service is UP or DEGRADED
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+              examples:
+                responseUp:
+                  value:
+                    status: UP
+                responseDegraded:
+                  value:
+                    status: DEGRADED
+        "503":
+          description: The service is DOWN.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+              examples:
+                responseDown:
+                  value:
+                    status: DOWN
+        "500":
+          description: a problem
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        default:
+          description: Default response
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+      security: []
+components:
+  schemas:
+    Enterprise:
+      type: object
+      properties:
+        enterpriseNumber:
+          pattern: "^[0-1]\\d{9}$"
+          type: string
+          description: Identifier issued by CBE for a registered organization
+        nssoNumber:
+          maximum: 199999934
+          minimum: 100006
+          type: integer
+      description: Only one of the two data (employerId or enterpriseNumber) must
+        be completed.
+      nullable: true
+      oneOf: []
+    NaturalPerson:
+      required:
+      - ssin
+      type: object
+      properties:
+        ssin:
+          pattern: "^\\d{11}$"
+          type: string
+          description: Social Security Identification Number issued by the National
+            Register or CBSS
+    Relation:
+      required:
+      - declarantReference
+      - type
+      type: object
+      properties:
+        declarantReference:
+          maxLength: 64
+          type: string
+        type:
+          type: integer
+          enum:
+          - 1
+          - 2
+          - 3
+          - 4
+    Calculation:
+      required:
+      - calculationDate
+      - endDate
+      - enterprise
+      - fiscalFeatures
+      - frequency
+      - id
+      - naturalPerson
+      - relation
+      - startDate
+      type: object
+      properties:
+        id:
+          pattern: "^[\\da-f]{8}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{12}$"
+          type: string
+          description: "Universally Unique Identifier, as standardized in RFC 4122\
+            \ and ISO/IEC 9834-8"
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        calculationDate:
+          type: string
+          format: date
+        frequency:
+          type: integer
+          enum:
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
+          - 6
+          - 99
+        relation:
+          $ref: '#/components/schemas/Relation'
+        enterprise:
+          $ref: '#/components/schemas/Enterprise'
+        naturalPerson:
+          $ref: '#/components/schemas/NaturalPerson'
+        services:
+          type: array
+          items:
+            $ref: '#/components/schemas/Service'
+        identifyingSocialFeatures:
+          type: array
+          items:
+            $ref: '#/components/schemas/IdentifyingSocialFeature'
+        fiscalFeatures:
+          type: array
+          items:
+            $ref: '#/components/schemas/FiscalFeatureData'
+    Service:
+      required:
+      - numberOfHours
+      - sequenceNumber
+      - startDate
+      - type
+      type: object
+      properties:
+        sequenceNumber:
+          maximum: 999
+          minimum: 1
+          type: integer
+        type:
+          maxLength: 7
+          minLength: 7
+          type: string
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        numberOfHours:
+          maximum: 9999999
+          minimum: 0
+          type: integer
+        feature:
+          $ref: '#/components/schemas/ServiceFeature'
+    ServiceFeature:
+      type: object
+      properties:
+        overtimeType:
+          type: integer
+          enum:
+          - 1
+          - 2
+        subjectionToSocialSecurityContribution:
+          type: integer
+          enum:
+          - 1
+          - 2
+        overtimeIncludedInCalendar:
+          type: integer
+          enum:
+          - 1
+          - 2
+        seafarerServiceType:
+          type: integer
+          enum:
+          - 1
+          - 2
+          - 3
+    IdentifyingSocialFeature:
+      required:
+      - employmentStatus
+      - endDate
+      - operationalSocialFeatures
+      - startDate
+      type: object
+      properties:
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        employmentStatus:
+          maxLength: 8
+          minLength: 8
+          type: string
+        employerClass:
+          maxLength: 5
+          minLength: 5
+          type: string
+        workerCode:
+          maxLength: 5
+          minLength: 5
+          type: string
+        flatRateCode:
+          maximum: 99999
+          minimum: 0
+          type: integer
+        operationalSocialFeatures:
+          type: array
+          items:
+            $ref: '#/components/schemas/OperationalSocialFeature'
+        socialFeaturesDetail:
+          $ref: '#/components/schemas/IdentifyingSocialFeaturesDetail'
+    EmploymentStatus:
+      maxLength: 8
+      minLength: 8
+      type: string
+    OperationalSocialFeature:
+      required:
+      - contractType
+      - endDate
+      - establishmentUnitNumber
+      - jointCommissionNumber
+      - startDate
+      - weeklyHours
+      type: object
+      properties:
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        contractType:
+          type: integer
+          enum:
+          - 1
+          - 2
+        establishmentUnitNumber:
+          pattern: "^[2-8]\\d{9}$"
+          type: string
+          description: Identifier issued by CBE for a site (establishment) of an organization
+        jointCommissionNumber:
+          pattern: "^\\d{3}(\\.\\d{2}){0,2}$"
+          type: string
+        economicActivity:
+          pattern: "^\\d{2}\\d*$"
+          type: string
+          description: NACE activity code (international). The first two digits are
+            division of activity. Each further digit specifies an additional level
+            of detail within the category of the previous level. The meaning of the
+            first four digits are standard and defined by EU. Further digits may vary
+            from country to country.
+        socialFeaturesDetail:
+          $ref: '#/components/schemas/OperationalSocialFeaturesDetail'
+        weeklyHours:
+          type: array
+          items:
+            $ref: '#/components/schemas/WeeklyHour'
+    WeeklyHour:
+      required:
+      - annualAverageWeeklyPaidWorkingHours
+      - effectiveAverageWeeklyWorkingHours
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+          - s
+          - q
+          - m
+        effectiveAverageWeeklyWorkingHours:
+          maximum: 99999
+          minimum: 0
+          type: integer
+        annualAverageWeeklyPaidWorkingHours:
+          maximum: 99999
+          minimum: 0
+          type: integer
+        reorganisationMeasures:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReorganisationMeasure'
+    ReorganisationMeasure:
+      required:
+      - percentage
+      - type
+      type: object
+      properties:
+        type:
+          maximum: 999
+          minimum: 0
+          type: integer
+        percentage:
+          maximum: 10000
+          minimum: 1
+          type: integer
+    SocialFeaturesDetailData:
+      required:
+      - endDate
+      - sequenceNumber
+      - startDate
+      type: object
+      properties:
+        sequenceNumber:
+          maximum: 999
+          minimum: 1
+          type: integer
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+      x-parent: true
+    OperationalSocialFeaturesDetail:
+      type: object
+      properties:
+        gradualWorkResumptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/GradualWorkResumption'
+    GradualWorkResumption:
+      allOf:
+      - $ref: '#/components/schemas/SocialFeaturesDetailData'
+      - required:
+        - weeklyMaxNumberOfHoursAllowed
+        type: object
+        properties:
+          weeklyMaxNumberOfHoursAllowed:
+            maximum: 99999
+            minimum: 1
+            type: integer
+    IdentifyingSocialFeaturesDetail:
+      required:
+      - jobs
+      type: object
+      properties:
+        jobs:
+          type: array
+          items:
+            $ref: '#/components/schemas/Job'
+        dismissals:
+          type: array
+          items:
+            $ref: '#/components/schemas/Dismissal'
+        starterJobs:
+          type: array
+          items:
+            $ref: '#/components/schemas/StarterJob'
+    Job:
+      allOf:
+      - $ref: '#/components/schemas/SocialFeaturesDetailData'
+      - required:
+        - title
+        type: object
+        properties:
+          title:
+            maxLength: 100
+            type: string
+    Dismissal:
+      allOf:
+      - $ref: '#/components/schemas/SocialFeaturesDetailData'
+      - required:
+        - noticePeriodStartDate
+        type: object
+        properties:
+          noticePeriodStartDate:
+            type: string
+            format: date
+          noticePeriodMonths:
+            maximum: 99999
+            minimum: 1
+            type: integer
+          noticePeriodWeeks:
+            maximum: 99999
+            minimum: 1
+            type: integer
+          noticePeriodDays:
+            maximum: 99999
+            minimum: 1
+            type: integer
+    StarterJob:
+      allOf:
+      - $ref: '#/components/schemas/SocialFeaturesDetailData'
+      - required:
+        - type
+        type: object
+        properties:
+          type:
+            type: integer
+            enum:
+            - 1
+            - 2
+            - 3
+            - 4
+            - 5
+            - 6
+            - 7
+            - 8
+            - 9
+          remunerationPercentageForStarterTraining:
+            maximum: 1000
+            minimum: 1
+            type: integer
+    FiscalFeatureData:
+      required:
+      - belgianResident
+      - civilStatusType
+      - crossBorderWorker
+      - disabilityIndicator
+      - endDate
+      - numberOfDependentChildren
+      - numberOfDependentDisabledChildren
+      - numberOfDependents
+      - numberOfDependentsNeedingCare
+      - numberOfDisabledDependents
+      - startDate
+      type: object
+      properties:
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        employmentStatus:
+          maxLength: 8
+          minLength: 8
+          type: string
+        civilStatusType:
+          type: integer
+          enum:
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
+          - 6
+        numberOfDependentChildren:
+          maximum: 99
+          minimum: 0
+          type: integer
+        numberOfDependentDisabledChildren:
+          maximum: 99
+          minimum: 0
+          type: integer
+        numberOfDependents:
+          maximum: 99
+          minimum: 0
+          type: integer
+        numberOfDisabledDependents:
+          maximum: 99
+          minimum: 0
+          type: integer
+        disabilityIndicator:
+          type: integer
+          enum:
+          - 1
+          - 2
+        crossBorderWorker:
+          type: integer
+          enum:
+          - 1
+          - 2
+        belgianResident:
+          type: integer
+          enum:
+          - 1
+          - 2
+        incomeOfPartner:
+          type: integer
+          enum:
+          - 1
+          - 2
+          - 3
+          - 4
+          - 5
+        disabilityOfPartner:
+          type: integer
+          enum:
+          - 1
+          - 2
+        numberOfDependentsNeedingCare:
+          maximum: 99
+          minimum: 0
+          type: integer
+    PageLinks:
+      type: object
+      properties:
+        prev:
+          type: string
+          description: URL of the previous page
+          format: uri
+        next:
+          type: string
+          description: URL of the next page
+          format: uri
+        page:
+          type: integer
+          description: Number of the current page
+        pageSize:
+          type: integer
+          description: Number of items per page
+        total:
+          type: integer
+          description: Total number of items found
+      description: Object containing links of paginated collection of resources
+    InputValidationProblem:
+      type: object
+      properties:
+        issues:
+          type: array
+          items:
+            $ref: '#/components/schemas/InputValidationIssue'
+      example:
+        type: urn:problem-type:belgif:badRequest
+        href: https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html
+        title: Bad Request
+        status: 400
+        detail: The input message is incorrect
+        instance: urn:uuid:123456-1234-1235-4567489798
+        issues:
+        - type: urn:problem-type:belgif:input-validation:schemaViolation
+          detail: exampleNumericProperty with value xyz should be numeric
+          in: path
+          name: exampleNumericProperty
+          value: abc
+        - type: urn:problem-type:belgif:input-validation:schemaViolation
+          title: Input isn't valid with respect to schema
+          detail: "examplePropertyWithPattern a2345678901 doesn't match pattern '^\\\
+            d{11}$'"
+          in: body
+          name: "items[0].examplePropertyWithPattern"
+          value: a2345678901
+      allOf:
+      - $ref: '#/components/schemas/Problem'
+    Problem:
+      type: object
+      properties:
+        type:
+          type: string
+          description: An absolute URI that identifies the problem type
+          format: uri
+          default: about:blank
+        href:
+          type: string
+          description: "An absolute URI that, when dereferenced, provides human-readable\
+            \ documentation for the problem type (e.g. using HTML)."
+          format: uri
+        title:
+          type: string
+          description: A short summary of the problem type. Written in English and
+            readable for engineers (usually not suited for non technical stakeholders
+            and not localized).
+          example: Service Unavailable
+        status:
+          maximum: 600
+          exclusiveMaximum: true
+          minimum: 400
+          type: integer
+          description: The HTTP status code generated by the origin server for this
+            occurrence of the problem.
+          format: int32
+          example: 503
+        detail:
+          type: string
+          description: A human-readable explanation specific to this occurrence of
+            the problem
+        instance:
+          type: string
+          description: An absolute URI that identifies the specific occurrence of
+            the problem. It may or may not yield further information if dereferenced.
+          format: uri
+      description: "A Problem Details object (RFC 9457).\n\nAdditional properties\
+        \ specific to the problem type may be present.    \n"
+      example:
+        type: urn:problem-type:exampleOrganization:exampleProblem
+        href: https://www.belgif.be/specification/rest/api-guide/#standardized-problem-types
+        title: Description of the type of problem that occurred
+        status: 400
+        detail: Description of specific occurrence of the problem
+        instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
+    InputValidationIssue:
+      type: object
+      properties:
+        in:
+          type: string
+          description: The location of the invalid input
+          enum:
+          - body
+          - header
+          - path
+          - query
+        name:
+          type: string
+          description: The name of the invalid input
+        value:
+          description: The value of the erroneous input
+      description: |
+        An issue detected during input validation.
+
+        `status` is usually not present.
+        `href`, if present, refers to documentation of the issue type.
+        Additional properties specific to the issue type may be present.
+      allOf:
+      - $ref: '#/components/schemas/Problem'
+    Uuid:
+      pattern: "^[\\da-f]{8}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{12}$"
+      type: string
+      description: "Universally Unique Identifier, as standardized in RFC 4122 and\
+        \ ISO/IEC 9834-8"
+    HealthStatus:
+      required:
+      - status
+      type: object
+      properties:
+        status:
+          type: string
+          description: "Level indicating the health status of the service: UP (functioning\
+            \ as expected), DOWN (suffering unexpected failures), DEGRADED (partly\
+            \ unavailable but service can be continued with reduced functionality),\
+            \ or a custom status value"
+      description: Response message for the API health
+    EnterpriseNumber:
+      pattern: "^[0-1]\\d{9}$"
+      type: string
+      description: Identifier issued by CBE for a registered organization
+    Ssin:
+      pattern: "^\\d{11}$"
+      type: string
+      description: Social Security Identification Number issued by the National Register
+        or CBSS
+    EstablishmentUnitNumber:
+      pattern: "^[2-8]\\d{9}$"
+      type: string
+      description: Identifier issued by CBE for a site (establishment) of an organization
+    NaceCode:
+      pattern: "^\\d{2}\\d*$"
+      type: string
+      description: NACE activity code (international). The first two digits are division
+        of activity. Each further digit specifies an additional level of detail within
+        the category of the previous level. The meaning of the first four digits are
+        standard and defined by EU. Further digits may vary from country to country.
+  responses:
+    ProblemResponse:
+      description: a problem
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+  parameters:
+    CalculationIdPathParameter:
+      name: calculationResultId
+      in: path
+      description: Universally Unique Identifier of a remuneration calculation
+      required: true
+      style: simple
+      explode: false
+      schema:
+        $ref: '#/components/schemas/Uuid'
