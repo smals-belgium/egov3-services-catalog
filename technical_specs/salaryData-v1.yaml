@@ -2,7 +2,7 @@ openapi: 3.0.3
 info:
   title: Salary Data - REST API
   description: Service that allows to transmit data of work and remuneration calculations
-  version: 0.0.1
+  version: 1.0.1.2
 servers:
 - url: https://services.socialsecurity.be/REST/salaryData/v1
 tags:
