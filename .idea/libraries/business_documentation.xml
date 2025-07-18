@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="business_documentation">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/business_documentation/Annexes_Structurées_FR.zip!/" />
+      <root url="jar://$PROJECT_DIR$/business_documentation/Gestructureerde_bijlagen_NL.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
