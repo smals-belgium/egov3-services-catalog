@@ -1,13 +1,16 @@
 openapi: 3.0.3
 info:
   title: Salary Data - REST API
-  description: Service that allows to transmit data of work and remuneration calculations
-  version: 1.0.1.2
+  description: Service that allows to transmit salary data
+  contact:
+    name: LTDS team
+    email: ltds-team@smals.be
+  version: 0.0.2
 servers:
 - url: https://services.socialsecurity.be/REST/salaryData/v1
 tags:
 - name: Calculation Results
-  description: Information about work and remuneration calculation results
+  description: Information about calculation results of salary data
 - name: Monitoring
   description: Service monitoring
 paths:
@@ -15,8 +18,8 @@ paths:
     post:
       tags:
       - Calculation Results
-      summary: Submit work and remuneration calculation results for a relation between
-        an enterprise and a natural person.
+      summary: Submit calculation results of salary data for a relation between an
+        enterprise and a natural person.
       operationId: submitCalculationResults
       requestBody:
         content:
@@ -65,12 +68,13 @@ paths:
     get:
       tags:
       - Calculation Results
-      summary: Return work and remuneration calculation results for a given id.
+      summary: Return calculation results of salary data for a given id.
       operationId: getCalculationResultsById
       parameters:
       - name: calculationResultId
         in: path
-        description: Universally Unique Identifier of a remuneration calculation
+        description: Universally Unique Identifier of a calculation result of salary
+          data.
         required: true
         style: simple
         explode: false
@@ -112,12 +116,13 @@ paths:
     put:
       tags:
       - Calculation Results
-      summary: Update work and remuneration calculation results by id.
+      summary: Update calculation results of salary data by id.
       operationId: updateCalculationResultsById
       parameters:
       - name: calculationResultId
         in: path
-        description: Universally Unique Identifier of a remuneration calculation
+        description: Universally Unique Identifier of a calculation result of salary
+          data.
         required: true
         style: simple
         explode: false
@@ -169,12 +174,13 @@ paths:
     delete:
       tags:
       - Calculation Results
-      summary: Delete work and remuneration calculation results by id.
+      summary: Delete calculation results of salary data by id.
       operationId: cancelCalculationResultsById
       parameters:
       - name: calculationResultId
         in: path
-        description: Universally Unique Identifier of a remuneration calculation
+        description: Universally Unique Identifier of a calculation result of salary
+          data.
         required: true
         style: simple
         explode: false
@@ -212,7 +218,7 @@ paths:
     get:
       tags:
       - Monitoring
-      summary: Check health of the service
+      summary: Check health of the service.
       externalDocs:
         url: https://www.belgif.be/specification/rest/api-guide/#health
       operationId: checkHealth
@@ -256,6 +262,7 @@ paths:
 components:
   schemas:
     Enterprise:
+      minProperties: 1
       type: object
       properties:
         enterpriseNumber:
@@ -266,10 +273,8 @@ components:
           maximum: 199999934
           minimum: 100006
           type: integer
-      description: Only one of the two data (employerId or enterpriseNumber) must
+      description: Minimum one of the two data (nssoNumber or enterpriseNumber) must
         be completed.
-      nullable: true
-      oneOf: []
     NaturalPerson:
       required:
       - ssin
@@ -405,7 +410,6 @@ components:
           - 3
     IdentifyingSocialFeature:
       required:
-      - employmentStatus
       - endDate
       - operationalSocialFeatures
       - startDate
@@ -881,7 +885,8 @@ components:
     CalculationIdPathParameter:
       name: calculationResultId
       in: path
-      description: Universally Unique Identifier of a remuneration calculation
+      description: Universally Unique Identifier of a calculation result of salary
+        data.
       required: true
       style: simple
       explode: false
