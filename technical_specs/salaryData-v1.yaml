@@ -5,7 +5,7 @@ info:
   contact:
     name: LTDS team
     email: ltds-team@smals.be
-  version: 0.0.2
+  version: 0.3.0
 servers:
 - url: https://services.socialsecurity.be/REST/salaryData/v1
 tags:
@@ -25,7 +25,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Calculation'
+              $ref: "#/components/schemas/Calculation"
         required: true
       responses:
         "201":
@@ -43,25 +43,25 @@ paths:
           content:
             application/problem+json:
               schema:
-                $ref: '#/components/schemas/InputValidationProblem'
+                $ref: "#/components/schemas/InputValidationProblem"
         "409":
           description: Conflict
           content:
             application/problem+json:
               schema:
-                $ref: '#/components/schemas/Problem'
+                $ref: "#/components/schemas/Problem"
         "500":
           description: Internal server error
           content:
             application/problem+json:
               schema:
-                $ref: '#/components/schemas/Problem'
+                $ref: "#/components/schemas/Problem"
         default:
           description: Default response
           content:
             application/problem+json:
               schema:
-                $ref: '#/components/schemas/Problem'
+                $ref: "#/components/schemas/Problem"
       x-oauth2-required-scopes: any
       x-content-type: application/json
   /calculationResults/{calculationResultId}:
@@ -79,7 +79,7 @@ paths:
         style: simple
         explode: false
         schema:
-          $ref: '#/components/schemas/Uuid'
+          $ref: "#/components/schemas/Uuid"
       responses:
         "200":
           description: The requested resource was found or a search request returns
@@ -87,31 +87,31 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Calculation'
+                $ref: "#/components/schemas/Calculation"
         "400":
           description: Bad request
           content:
             application/problem+json:
               schema:
-                $ref: '#/components/schemas/InputValidationProblem'
+                $ref: "#/components/schemas/InputValidationProblem"
         "404":
           description: The requested resource was not found
           content:
             application/problem+json:
               schema:
-                $ref: '#/components/schemas/Problem'
+                $ref: "#/components/schemas/Problem"
         "500":
           description: Internal server error
           content:
             application/problem+json:
               schema:
-                $ref: '#/components/schemas/Problem'
+                $ref: "#/components/schemas/Problem"
         default:
           description: Default response
           content:
             application/problem+json:
               schema:
-                $ref: '#/components/schemas/Problem'
+                $ref: "#/components/schemas/Problem"
       x-oauth2-required-scopes: any
     put:
       tags:
@@ -127,12 +127,12 @@ paths:
         style: simple
         explode: false
         schema:
-          $ref: '#/components/schemas/Uuid'
+          $ref: "#/components/schemas/Uuid"
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Calculation'
+              $ref: "#/components/schemas/Calculation"
         required: true
       responses:
         "204":
@@ -150,25 +150,25 @@ paths:
           content:
             application/problem+json:
               schema:
-                $ref: '#/components/schemas/InputValidationProblem'
+                $ref: "#/components/schemas/InputValidationProblem"
         "404":
           description: The requested resource was not found
           content:
             application/problem+json:
               schema:
-                $ref: '#/components/schemas/Problem'
+                $ref: "#/components/schemas/Problem"
         "500":
           description: Internal server error
           content:
             application/problem+json:
               schema:
-                $ref: '#/components/schemas/Problem'
+                $ref: "#/components/schemas/Problem"
         default:
           description: Default response
           content:
             application/problem+json:
               schema:
-                $ref: '#/components/schemas/Problem'
+                $ref: "#/components/schemas/Problem"
       x-oauth2-required-scopes: any
       x-content-type: application/json
     delete:
@@ -185,7 +185,7 @@ paths:
         style: simple
         explode: false
         schema:
-          $ref: '#/components/schemas/Uuid'
+          $ref: "#/components/schemas/Uuid"
       responses:
         "204":
           description: No content
@@ -194,25 +194,25 @@ paths:
           content:
             application/problem+json:
               schema:
-                $ref: '#/components/schemas/InputValidationProblem'
+                $ref: "#/components/schemas/InputValidationProblem"
         "404":
           description: The requested resource was not found.
           content:
             application/problem+json:
               schema:
-                $ref: '#/components/schemas/Problem'
+                $ref: "#/components/schemas/Problem"
         "500":
           description: Internal server error
           content:
             application/problem+json:
               schema:
-                $ref: '#/components/schemas/Problem'
+                $ref: "#/components/schemas/Problem"
         default:
           description: Default response
           content:
             application/problem+json:
               schema:
-                $ref: '#/components/schemas/Problem'
+                $ref: "#/components/schemas/Problem"
       x-oauth2-required-scopes: any
   /health:
     get:
@@ -228,7 +228,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HealthStatus'
+                $ref: "#/components/schemas/HealthStatus"
               examples:
                 responseUp:
                   value:
@@ -241,23 +241,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HealthStatus'
+                $ref: "#/components/schemas/HealthStatus"
               examples:
                 responseDown:
                   value:
                     status: DOWN
         "500":
-          description: a problem
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
+          $ref: "#/components/responses/ProblemResponse"
         default:
           description: Default response
           content:
             application/problem+json:
               schema:
-                $ref: '#/components/schemas/Problem'
+                $ref: "#/components/schemas/Problem"
       security: []
 components:
   schemas:
@@ -339,23 +335,23 @@ components:
           - 6
           - 99
         relation:
-          $ref: '#/components/schemas/Relation'
+          $ref: "#/components/schemas/Relation"
         enterprise:
-          $ref: '#/components/schemas/Enterprise'
+          $ref: "#/components/schemas/Enterprise"
         naturalPerson:
-          $ref: '#/components/schemas/NaturalPerson'
+          $ref: "#/components/schemas/NaturalPerson"
         services:
           type: array
           items:
-            $ref: '#/components/schemas/Service'
+            $ref: "#/components/schemas/Service"
         identifyingSocialFeatures:
           type: array
           items:
-            $ref: '#/components/schemas/IdentifyingSocialFeature'
+            $ref: "#/components/schemas/IdentifyingSocialFeature"
         fiscalFeatures:
           type: array
           items:
-            $ref: '#/components/schemas/FiscalFeatureData'
+            $ref: "#/components/schemas/FiscalFeature"
     Service:
       required:
       - numberOfHours
@@ -382,8 +378,8 @@ components:
           maximum: 9999999
           minimum: 0
           type: integer
-        feature:
-          $ref: '#/components/schemas/ServiceFeature'
+        serviceFeatures:
+          $ref: "#/components/schemas/ServiceFeature"
     ServiceFeature:
       type: object
       properties:
@@ -440,9 +436,13 @@ components:
         operationalSocialFeatures:
           type: array
           items:
-            $ref: '#/components/schemas/OperationalSocialFeature'
-        socialFeaturesDetail:
-          $ref: '#/components/schemas/IdentifyingSocialFeaturesDetail'
+            $ref: "#/components/schemas/OperationalSocialFeature"
+        identifyingSocialFeaturesDetail:
+          $ref: "#/components/schemas/IdentifyingSocialFeaturesDetail"
+        financialElements:
+          type: array
+          items:
+            $ref: "#/components/schemas/FinancialElement"
     EmploymentStatus:
       maxLength: 8
       minLength: 8
@@ -483,12 +483,16 @@ components:
             of detail within the category of the previous level. The meaning of the
             first four digits are standard and defined by EU. Further digits may vary
             from country to country.
-        socialFeaturesDetail:
-          $ref: '#/components/schemas/OperationalSocialFeaturesDetail'
+        operationalSocialFeaturesDetail:
+          $ref: "#/components/schemas/OperationalSocialFeaturesDetail"
         weeklyHours:
           type: array
           items:
-            $ref: '#/components/schemas/WeeklyHour'
+            $ref: "#/components/schemas/WeeklyHour"
+        financialElements:
+          type: array
+          items:
+            $ref: "#/components/schemas/FinancialElement"
     WeeklyHour:
       required:
       - annualAverageWeeklyPaidWorkingHours
@@ -512,7 +516,7 @@ components:
         reorganisationMeasures:
           type: array
           items:
-            $ref: '#/components/schemas/ReorganisationMeasure'
+            $ref: "#/components/schemas/ReorganisationMeasure"
     ReorganisationMeasure:
       required:
       - percentage
@@ -527,7 +531,7 @@ components:
           maximum: 10000
           minimum: 1
           type: integer
-    SocialFeaturesDetailData:
+    AdditionalSocialFeaturesDetail:
       required:
       - endDate
       - sequenceNumber
@@ -551,10 +555,10 @@ components:
         gradualWorkResumptions:
           type: array
           items:
-            $ref: '#/components/schemas/GradualWorkResumption'
+            $ref: "#/components/schemas/GradualWorkResumption"
     GradualWorkResumption:
       allOf:
-      - $ref: '#/components/schemas/SocialFeaturesDetailData'
+      - $ref: "#/components/schemas/AdditionalSocialFeaturesDetail"
       - required:
         - weeklyMaxNumberOfHoursAllowed
         type: object
@@ -571,18 +575,18 @@ components:
         jobs:
           type: array
           items:
-            $ref: '#/components/schemas/Job'
+            $ref: "#/components/schemas/Job"
         dismissals:
           type: array
           items:
-            $ref: '#/components/schemas/Dismissal'
+            $ref: "#/components/schemas/Dismissal"
         starterJobs:
           type: array
           items:
-            $ref: '#/components/schemas/StarterJob'
+            $ref: "#/components/schemas/StarterJob"
     Job:
       allOf:
-      - $ref: '#/components/schemas/SocialFeaturesDetailData'
+      - $ref: "#/components/schemas/AdditionalSocialFeaturesDetail"
       - required:
         - title
         type: object
@@ -590,9 +594,15 @@ components:
           title:
             maxLength: 100
             type: string
+          professionalClassificationSectoralCla:
+            maxLength: 100
+            type: string
+          professionalClassificationEnterprise:
+            maxLength: 100
+            type: string
     Dismissal:
       allOf:
-      - $ref: '#/components/schemas/SocialFeaturesDetailData'
+      - $ref: "#/components/schemas/AdditionalSocialFeaturesDetail"
       - required:
         - noticePeriodStartDate
         type: object
@@ -614,7 +624,7 @@ components:
             type: integer
     StarterJob:
       allOf:
-      - $ref: '#/components/schemas/SocialFeaturesDetailData'
+      - $ref: "#/components/schemas/AdditionalSocialFeaturesDetail"
       - required:
         - type
         type: object
@@ -635,7 +645,98 @@ components:
             maximum: 1000
             minimum: 1
             type: integer
-    FiscalFeatureData:
+    FinancialElement:
+      required:
+      - amount
+      - code
+      - roles
+      type: object
+      properties:
+        code:
+          maxLength: 7
+          minLength: 7
+          type: string
+        amount:
+          type: integer
+          description: "Money amount in Euro cents, also allows negative amounts."
+        roles:
+          maxItems: 2
+          type: array
+          items:
+            $ref: "#/components/schemas/FinancialElementRole"
+        bonusFeatures:
+          $ref: "#/components/schemas/BonusFeature"
+        voucherFeatures:
+          type: array
+          items:
+            $ref: "#/components/schemas/VoucherFeature"
+        severancePayFeatures:
+          $ref: "#/components/schemas/SeverancePayFeature"
+        holidayAfterSeveranceFeatures:
+          type: array
+          items:
+            $ref: "#/components/schemas/HolidayAfterSeveranceFeature"
+    FinancialElementRole:
+      type: integer
+      enum:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 7
+      - 8
+      - 9
+      - 10
+      - 11
+    BonusFeature:
+      type: object
+      properties:
+        allocationFrequency:
+          maximum: 99
+          minimum: 0
+          type: integer
+    VoucherFeature:
+      required:
+      - amountPerUnit
+      - numberOfUnits
+      type: object
+      properties:
+        numberOfUnits:
+          maximum: 999999999999999
+          minimum: 0
+          type: integer
+          format: int64
+        amountPerUnit:
+          minimum: 0
+          type: integer
+          description: Money amount in Euro cents >= 0
+    SeverancePayFeature:
+      required:
+      - endDate
+      - startDate
+      type: object
+      properties:
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        numberOfDaysReductionByOutplacement:
+          maximum: 28
+          minimum: 0
+          type: integer
+    HolidayAfterSeveranceFeature:
+      required:
+      - date
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+    FiscalFeature:
       required:
       - belgianResident
       - civilStatusType
@@ -647,6 +748,7 @@ components:
       - numberOfDependents
       - numberOfDependentsNeedingCare
       - numberOfDisabledDependents
+      - retired
       - startDate
       type: object
       properties:
@@ -717,6 +819,15 @@ components:
           maximum: 99
           minimum: 0
           type: integer
+        retired:
+          type: integer
+          enum:
+          - 1
+          - 2
+        financialElements:
+          type: array
+          items:
+            $ref: "#/components/schemas/FinancialElement"
     PageLinks:
       type: object
       properties:
@@ -744,7 +855,7 @@ components:
         issues:
           type: array
           items:
-            $ref: '#/components/schemas/InputValidationIssue'
+            $ref: "#/components/schemas/InputValidationIssue"
       example:
         type: urn:problem-type:belgif:badRequest
         href: https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html
@@ -766,7 +877,7 @@ components:
           name: "items[0].examplePropertyWithPattern"
           value: a2345678901
       allOf:
-      - $ref: '#/components/schemas/Problem'
+      - $ref: "#/components/schemas/Problem"
     Problem:
       type: object
       properties:
@@ -836,7 +947,7 @@ components:
         `href`, if present, refers to documentation of the issue type.
         Additional properties specific to the issue type may be present.
       allOf:
-      - $ref: '#/components/schemas/Problem'
+      - $ref: "#/components/schemas/Problem"
     Uuid:
       pattern: "^[\\da-f]{8}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{12}$"
       type: string
@@ -874,13 +985,20 @@ components:
         of activity. Each further digit specifies an additional level of detail within
         the category of the previous level. The meaning of the first four digits are
         standard and defined by EU. Further digits may vary from country to country.
+    EuroCentAmount:
+      type: integer
+      description: "Money amount in Euro cents, also allows negative amounts."
+    EuroCentPositiveAmount:
+      minimum: 0
+      type: integer
+      description: Money amount in Euro cents >= 0
   responses:
     ProblemResponse:
       description: a problem
       content:
         application/problem+json:
           schema:
-            $ref: '#/components/schemas/Problem'
+            $ref: "#/components/schemas/Problem"
   parameters:
     CalculationIdPathParameter:
       name: calculationResultId
@@ -891,4 +1009,4 @@ components:
       style: simple
       explode: false
       schema:
-        $ref: '#/components/schemas/Uuid'
+        $ref: "#/components/schemas/Uuid"
