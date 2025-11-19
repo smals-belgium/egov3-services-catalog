@@ -5,7 +5,7 @@ info:
   contact:
     name: LTDS team
     email: ltds-team@smals.be
-  version: 0.3.0
+  version: 0.4.0
 servers:
 - url: https://services.socialsecurity.be/REST/salaryData/v1
 tags:
@@ -62,6 +62,9 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
+      security:
+      - Oauth:
+        - scope:rsz-onss:management:ltds:input-rest:ltds
       x-oauth2-required-scopes: any
       x-content-type: application/json
   /calculationResults/{calculationResultId}:
@@ -112,6 +115,9 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
+      security:
+      - Oauth:
+        - scope:rsz-onss:management:ltds:input-rest:ltds
       x-oauth2-required-scopes: any
     put:
       tags:
@@ -169,6 +175,9 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
+      security:
+      - Oauth:
+        - scope:rsz-onss:management:ltds:input-rest:ltds
       x-oauth2-required-scopes: any
       x-content-type: application/json
     delete:
@@ -213,6 +222,9 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
+      security:
+      - Oauth:
+        - scope:rsz-onss:management:ltds:input-rest:ltds
       x-oauth2-required-scopes: any
   /health:
     get:
@@ -352,18 +364,59 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/FiscalFeature"
+        channel:
+          type: string
+          description: The channel through which the input was submitted.
+          readOnly: true
+          enum:
+          - web
+          - rest
+          - batch
+        validation:
+          $ref: "#/components/schemas/CalculationValidation"
+    CalculationValidation:
+      required:
+      - status
+      type: object
+      properties:
+        status:
+          $ref: "#/components/schemas/Status"
+        issues:
+          type: array
+          description: List of validation or processing issues detected in the input.
+          items:
+            $ref: "#/components/schemas/SalaryDataInputValidationIssue"
+      description: The processing status and issues of the input.
+      readOnly: true
+    Status:
+      type: string
+      description: The current processing status of the salary data input.
+      enum:
+      - inProgress
+      - rejected
+      - validated
+      - deleted
+    SalaryDataInputValidationIssue:
+      required:
+      - severity
+      allOf:
+      - $ref: "#/components/schemas/InputValidationIssue"
+      - type: object
+        properties:
+          severity:
+            type: string
+            description: The impact level of the error on request processing
+            enum:
+            - blocking
+            - notBlocking
+            - informative
     Service:
       required:
       - numberOfHours
-      - sequenceNumber
       - startDate
       - type
       type: object
       properties:
-        sequenceNumber:
-          maximum: 999
-          minimum: 1
-          type: integer
         type:
           maxLength: 7
           minLength: 7
@@ -404,11 +457,21 @@ components:
           - 1
           - 2
           - 3
+        legalVacationOrigin:
+          type: integer
+          enum:
+          - 1
+        nonAssimilationLegalVacationRights:
+          type: integer
+          enum:
+          - 1
     IdentifyingSocialFeature:
       required:
+      - employerClass
       - endDate
       - operationalSocialFeatures
       - startDate
+      - workerCode
       type: object
       properties:
         startDate:
@@ -418,8 +481,8 @@ components:
           type: string
           format: date
         employmentStatus:
-          maxLength: 8
-          minLength: 8
+          maxLength: 5
+          minLength: 5
           type: string
         employerClass:
           maxLength: 5
@@ -444,8 +507,8 @@ components:
           items:
             $ref: "#/components/schemas/FinancialElement"
     EmploymentStatus:
-      maxLength: 8
-      minLength: 8
+      maxLength: 5
+      minLength: 5
       type: string
     OperationalSocialFeature:
       required:
@@ -506,11 +569,11 @@ components:
           - q
           - m
         effectiveAverageWeeklyWorkingHours:
-          maximum: 99999
+          maximum: 16800
           minimum: 0
           type: integer
         annualAverageWeeklyPaidWorkingHours:
-          maximum: 99999
+          maximum: 16800
           minimum: 0
           type: integer
         reorganisationMeasures:
@@ -534,14 +597,9 @@ components:
     AdditionalSocialFeaturesDetail:
       required:
       - endDate
-      - sequenceNumber
       - startDate
       type: object
       properties:
-        sequenceNumber:
-          maximum: 999
-          minimum: 1
-          type: integer
         startDate:
           type: string
           format: date
@@ -568,8 +626,6 @@ components:
             minimum: 1
             type: integer
     IdentifyingSocialFeaturesDetail:
-      required:
-      - jobs
       type: object
       properties:
         jobs:
@@ -676,6 +732,10 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/HolidayAfterSeveranceFeature"
+        paidRightBalanceFeatures:
+          $ref: "#/components/schemas/PaidRightBalanceFeature"
+        vacationPayFeatures:
+          $ref: "#/components/schemas/VacationPayFeature"
     FinancialElementRole:
       type: integer
       enum:
@@ -705,7 +765,7 @@ components:
       properties:
         numberOfUnits:
           maximum: 999999999999999
-          minimum: 0
+          minimum: 1
           type: integer
           format: int64
         amountPerUnit:
@@ -759,8 +819,8 @@ components:
           type: string
           format: date
         employmentStatus:
-          maxLength: 8
-          minLength: 8
+          maxLength: 5
+          minLength: 5
           type: string
         civilStatusType:
           type: integer
@@ -828,6 +888,33 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/FinancialElement"
+    PaidRightBalanceFeature:
+      required:
+      - numberOfPaidHours
+      - serviceType
+      type: object
+      properties:
+        numberOfPaidHours:
+          maximum: 99999
+          minimum: 1
+          type: integer
+        serviceType:
+          maximum: 9999999
+          minimum: 1
+          type: integer
+    VacationPayFeature:
+      required:
+      - vacationHoursBalance
+      type: object
+      properties:
+        vacationHoursBalance:
+          maximum: 67200
+          minimum: 0
+          type: integer
+        initialVacationHours:
+          maximum: 67200
+          minimum: 0
+          type: integer
     PageLinks:
       type: object
       properties:
@@ -948,6 +1035,7 @@ components:
         Additional properties specific to the issue type may be present.
       allOf:
       - $ref: "#/components/schemas/Problem"
+      x-parent: true
     Uuid:
       pattern: "^[\\da-f]{8}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{12}$"
       type: string
@@ -1010,3 +1098,18 @@ components:
       explode: false
       schema:
         $ref: "#/components/schemas/Uuid"
+  securitySchemes:
+    Oauth:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://services.socialsecurity.be/REST/oauth/v5/token
+          scopes:
+            scope:rsz-onss:management:ltds:input-rest:ltds: LTDS - Scope to be used
+              by Employer/ServiceProvider/SocialSecretariat
+        authorizationCode:
+          authorizationUrl: https://oauth-v5.socialsecurity.be/oauth2/authorize
+          tokenUrl: https://services.socialsecurity.be/REST/oauth/v5/token
+          scopes:
+            scope:rsz-onss:management:ltds:input-rest:ltds: LTDS - Scope to be used
+              by Employer/ServiceProvider/SocialSecretariat
