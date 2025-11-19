@@ -12,3 +12,8 @@
 |----------------------|----------------------------------------------------------------------------------------------------------------------------------|
 | Technical Schema        | [Retrieve the JSON schema](https://github.com/smals-belgium/egov3-services-catalog/blob/main/technical_specs/salaryData-v1.yaml) |
 | Technical Schema UI     | [Pretty print of the schema](https://smals-belgium.github.io/egov3-services-catalog/)                                            
+
+
+| Type         | Documentation FR                                                                        | Documentatie NL                                                                          |
+|--------------| --------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Rest Documentation | [Voir la documentation](https://raw.githubusercontent.com/smals-belgium/egov3-services-catalog/main/technical_specs/LTDS-REST-documentation-FR.pdf) | [Bekijk de documentatie]( https://raw.githubusercontent.com/smals-belgium/egov3-services-catalog/main/technical_specs/LTDS-REST-documentation-NL.pdf) |
