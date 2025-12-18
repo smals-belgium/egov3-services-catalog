@@ -4,8 +4,8 @@ info:
   description: Service that allows to transmit salary data
   contact:
     name: LTDS team
-    email: ltds-team@smals.be
-  version: 0.4.0
+    email: LTDS@smals.be
+  version: 0.5.0
 servers:
 - url: https://services.socialsecurity.be/REST/salaryData/v1
 tags:
@@ -43,13 +43,20 @@ paths:
           content:
             application/problem+json:
               schema:
+                $ref: "#/components/schemas/SalaryDataInputValidationProblem"
+        "403":
+          description: Forbidden – the client does not have permission to access this
+            resource
+          content:
+            application/problem+json:
+              schema:
                 $ref: "#/components/schemas/InputValidationProblem"
         "409":
           description: Conflict
           content:
             application/problem+json:
               schema:
-                $ref: "#/components/schemas/Problem"
+                $ref: "#/components/schemas/InputValidationProblem"
         "500":
           description: Internal server error
           content:
@@ -71,7 +78,8 @@ paths:
     get:
       tags:
       - Calculation Results
-      summary: Return calculation results of salary data for a given id.
+      summary: Return last situation of calculation results of salary data for a given
+        id.
       operationId: getCalculationResultsById
       parameters:
       - name: calculationResultId
@@ -97,12 +105,19 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/InputValidationProblem"
+        "403":
+          description: Forbidden – the client does not have permission to access this
+            resource
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/InputValidationProblem"
         "404":
           description: The requested resource was not found
           content:
             application/problem+json:
               schema:
-                $ref: "#/components/schemas/Problem"
+                $ref: "#/components/schemas/InputValidationProblem"
         "500":
           description: Internal server error
           content:
@@ -156,13 +171,26 @@ paths:
           content:
             application/problem+json:
               schema:
+                $ref: "#/components/schemas/SalaryDataInputValidationProblem"
+        "403":
+          description: Forbidden – the client does not have permission to access this
+            resource
+          content:
+            application/problem+json:
+              schema:
                 $ref: "#/components/schemas/InputValidationProblem"
         "404":
           description: The requested resource was not found
           content:
             application/problem+json:
               schema:
-                $ref: "#/components/schemas/Problem"
+                $ref: "#/components/schemas/InputValidationProblem"
+        "409":
+          description: Conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/InputValidationProblem"
         "500":
           description: Internal server error
           content:
@@ -204,12 +232,25 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/InputValidationProblem"
-        "404":
-          description: The requested resource was not found.
+        "403":
+          description: Forbidden – the client does not have permission to access this
+            resource
           content:
             application/problem+json:
               schema:
-                $ref: "#/components/schemas/Problem"
+                $ref: "#/components/schemas/InputValidationProblem"
+        "404":
+          description: The requested resource was not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/InputValidationProblem"
+        "409":
+          description: Conflict
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/InputValidationProblem"
         "500":
           description: Internal server error
           content:
@@ -303,18 +344,12 @@ components:
           maxLength: 64
           type: string
         type:
-          type: integer
-          enum:
-          - 1
-          - 2
-          - 3
-          - 4
+          $ref: "#/components/schemas/RelationType"
     Calculation:
       required:
       - calculationDate
       - endDate
       - enterprise
-      - fiscalFeatures
       - frequency
       - id
       - naturalPerson
@@ -337,15 +372,7 @@ components:
           type: string
           format: date
         frequency:
-          type: integer
-          enum:
-          - 1
-          - 2
-          - 3
-          - 4
-          - 5
-          - 6
-          - 99
+          $ref: "#/components/schemas/CalculationFrequency"
         relation:
           $ref: "#/components/schemas/Relation"
         enterprise:
@@ -372,6 +399,11 @@ components:
           - web
           - rest
           - batch
+        receivedDate:
+          type: string
+          description: The date and time at which the calculation was received.
+          format: date-time
+          readOnly: true
         validation:
           $ref: "#/components/schemas/CalculationValidation"
     CalculationValidation:
@@ -381,6 +413,10 @@ components:
       properties:
         status:
           $ref: "#/components/schemas/Status"
+        date:
+          type: string
+          description: The date and time at which the calculation was validated.
+          format: date-time
         issues:
           type: array
           description: List of validation or processing issues detected in the input.
@@ -396,6 +432,15 @@ components:
       - rejected
       - validated
       - deleted
+    SalaryDataInputValidationProblem:
+      type: object
+      properties:
+        issues:
+          type: array
+          items:
+            $ref: "#/components/schemas/SalaryDataInputValidationIssue"
+      allOf:
+      - $ref: "#/components/schemas/Problem"
     SalaryDataInputValidationIssue:
       required:
       - severity
@@ -403,6 +448,9 @@ components:
       - $ref: "#/components/schemas/InputValidationIssue"
       - type: object
         properties:
+          externalReference:
+            maxLength: 64
+            type: string
           severity:
             type: string
             description: The impact level of the error on request processing
@@ -410,6 +458,24 @@ components:
             - blocking
             - notBlocking
             - informative
+    CalculationFrequency:
+      type: integer
+      enum:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+      - 6
+      - 99
+    RelationType:
+      type: integer
+      enum:
+      - 1
+      - 2
+      - 3
+      - 4
+      - 999
     Service:
       required:
       - numberOfHours
@@ -417,6 +483,9 @@ components:
       - type
       type: object
       properties:
+        externalReference:
+          maxLength: 64
+          type: string
         type:
           maxLength: 7
           minLength: 7
@@ -433,9 +502,14 @@ components:
           type: integer
         serviceFeatures:
           $ref: "#/components/schemas/ServiceFeature"
+        usingEmployer:
+          $ref: "#/components/schemas/UsingEmployer"
     ServiceFeature:
       type: object
       properties:
+        externalReference:
+          maxLength: 64
+          type: string
         overtimeType:
           type: integer
           enum:
@@ -474,6 +548,9 @@ components:
       - workerCode
       type: object
       properties:
+        externalReference:
+          maxLength: 64
+          type: string
         startDate:
           type: string
           format: date
@@ -520,6 +597,9 @@ components:
       - weeklyHours
       type: object
       properties:
+        externalReference:
+          maxLength: 64
+          type: string
         startDate:
           type: string
           format: date
@@ -546,6 +626,12 @@ components:
             of detail within the category of the previous level. The meaning of the
             first four digits are standard and defined by EU. Further digits may vary
             from country to country.
+        educationSectorPaymentMethod:
+          type: integer
+          enum:
+          - 10
+          - 12
+          - 20
         operationalSocialFeaturesDetail:
           $ref: "#/components/schemas/OperationalSocialFeaturesDetail"
         weeklyHours:
@@ -562,6 +648,9 @@ components:
       - effectiveAverageWeeklyWorkingHours
       type: object
       properties:
+        externalReference:
+          maxLength: 64
+          type: string
         type:
           type: string
           enum:
@@ -586,6 +675,9 @@ components:
       - type
       type: object
       properties:
+        externalReference:
+          maxLength: 64
+          type: string
         type:
           maximum: 999
           minimum: 0
@@ -600,6 +692,9 @@ components:
       - startDate
       type: object
       properties:
+        externalReference:
+          maxLength: 64
+          type: string
         startDate:
           type: string
           format: date
@@ -610,10 +705,8 @@ components:
     OperationalSocialFeaturesDetail:
       type: object
       properties:
-        gradualWorkResumptions:
-          type: array
-          items:
-            $ref: "#/components/schemas/GradualWorkResumption"
+        gradualWorkResumption:
+          $ref: "#/components/schemas/GradualWorkResumption"
     GradualWorkResumption:
       allOf:
       - $ref: "#/components/schemas/AdditionalSocialFeaturesDetail"
@@ -632,10 +725,8 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Job"
-        dismissals:
-          type: array
-          items:
-            $ref: "#/components/schemas/Dismissal"
+        dismissal:
+          $ref: "#/components/schemas/Dismissal"
         starterJobs:
           type: array
           items:
@@ -708,6 +799,9 @@ components:
       - roles
       type: object
       properties:
+        externalReference:
+          maxLength: 64
+          type: string
         code:
           maxLength: 7
           minLength: 7
@@ -753,6 +847,9 @@ components:
     BonusFeature:
       type: object
       properties:
+        externalReference:
+          maxLength: 64
+          type: string
         allocationFrequency:
           maximum: 99
           minimum: 0
@@ -763,6 +860,9 @@ components:
       - numberOfUnits
       type: object
       properties:
+        externalReference:
+          maxLength: 64
+          type: string
         numberOfUnits:
           maximum: 999999999999999
           minimum: 1
@@ -778,6 +878,9 @@ components:
       - startDate
       type: object
       properties:
+        externalReference:
+          maxLength: 64
+          type: string
         startDate:
           type: string
           format: date
@@ -786,13 +889,16 @@ components:
           format: date
         numberOfDaysReductionByOutplacement:
           maximum: 28
-          minimum: 0
+          minimum: 1
           type: integer
     HolidayAfterSeveranceFeature:
       required:
       - date
       type: object
       properties:
+        externalReference:
+          maxLength: 64
+          type: string
         date:
           type: string
           format: date
@@ -812,6 +918,9 @@ components:
       - startDate
       type: object
       properties:
+        externalReference:
+          maxLength: 64
+          type: string
         startDate:
           type: string
           format: date
@@ -894,6 +1003,9 @@ components:
       - serviceType
       type: object
       properties:
+        externalReference:
+          maxLength: 64
+          type: string
         numberOfPaidHours:
           maximum: 99999
           minimum: 1
@@ -907,6 +1019,9 @@ components:
       - vacationHoursBalance
       type: object
       properties:
+        externalReference:
+          maxLength: 64
+          type: string
         vacationHoursBalance:
           maximum: 67200
           minimum: 0
@@ -915,6 +1030,18 @@ components:
           maximum: 67200
           minimum: 0
           type: integer
+    UsingEmployer:
+      required:
+      - enterpriseNumber
+      type: object
+      properties:
+        enterpriseNumber:
+          pattern: "^[0-1]\\d{9}$"
+          type: string
+          description: Identifier issued by CBE for a registered organization
+        externalReference:
+          maxLength: 64
+          type: string
     PageLinks:
       type: object
       properties:
@@ -936,6 +1063,20 @@ components:
           type: integer
           description: Total number of items found
       description: Object containing links of paginated collection of resources
+    Uuid:
+      pattern: "^[\\da-f]{8}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{12}$"
+      type: string
+      description: "Universally Unique Identifier, as standardized in RFC 4122 and\
+        \ ISO/IEC 9834-8"
+    EnterpriseNumber:
+      pattern: "^[0-1]\\d{9}$"
+      type: string
+      description: Identifier issued by CBE for a registered organization
+    Ssin:
+      pattern: "^\\d{11}$"
+      type: string
+      description: Social Security Identification Number issued by the National Register
+        or CBSS
     InputValidationProblem:
       type: object
       properties:
@@ -1036,11 +1177,6 @@ components:
       allOf:
       - $ref: "#/components/schemas/Problem"
       x-parent: true
-    Uuid:
-      pattern: "^[\\da-f]{8}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{12}$"
-      type: string
-      description: "Universally Unique Identifier, as standardized in RFC 4122 and\
-        \ ISO/IEC 9834-8"
     HealthStatus:
       required:
       - status
@@ -1053,15 +1189,6 @@ components:
             \ unavailable but service can be continued with reduced functionality),\
             \ or a custom status value"
       description: Response message for the API health
-    EnterpriseNumber:
-      pattern: "^[0-1]\\d{9}$"
-      type: string
-      description: Identifier issued by CBE for a registered organization
-    Ssin:
-      pattern: "^\\d{11}$"
-      type: string
-      description: Social Security Identification Number issued by the National Register
-        or CBSS
     EstablishmentUnitNumber:
       pattern: "^[2-8]\\d{9}$"
       type: string
