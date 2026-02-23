@@ -1,3 +1,4 @@
+# LTDS
 ## Functional Documentation
 
 | Type         | Documentation FR                                                                        | Documentatie NL                                                                          |
@@ -18,3 +19,12 @@
 |--------------| --------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
 | Rest Documentation | [Voir la documentation](https://raw.githubusercontent.com/smals-belgium/egov3-services-catalog/main/technical_specs/LTDS-REST-documentation-FR.pdf) | [Bekijk de documentatie]( https://raw.githubusercontent.com/smals-belgium/egov3-services-catalog/main/technical_specs/LTDS-REST-documentation-NL.pdf) |
 | Batch Documentation | [Voir la documentation](https://raw.githubusercontent.com/smals-belgium/egov3-services-catalog/main/technical_specs/Echange%20d%C3%A9clarants%20-%20ONSS%20via%20SFTP.pdf)| [Bekijk de documentatie](https://raw.githubusercontent.com/smals-belgium/egov3-services-catalog/main/technical_specs/Uitwisseling%20aangevers%20-%20RSZ%20via%20SFTP.pdf) |
+
+# AMD (Asynchronous Message Delivery)
+
+## Technical Documentation
+
+| Type                 | Description                                                                                                                      |
+|----------------------|----------------------------------------------------------------------------------------------------------------------------------|
+| Technical Schema        | SOON |
+                                         
