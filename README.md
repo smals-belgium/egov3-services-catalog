@@ -10,7 +10,7 @@
 
 | Type                 | Description                                                                                                                      |
 |----------------------|----------------------------------------------------------------------------------------------------------------------------------|
-| Technical Schema        | [Retrieve the JSON schema](https://github.com/smals-belgium/egov3-services-catalog/blob/main/technical_specs/salaryData-v1.yaml) |
+| Technical Schema        | [Retrieve the JSON schema](https://raw.githubusercontent.com/smals-belgium/egov3-services-catalog/main/technical_specs/salaryData-v1.yaml) |
 | Technical Schema UI     | [Pretty print of the schema](https://smals-belgium.github.io/egov3-services-catalog/)                                            
 
 
