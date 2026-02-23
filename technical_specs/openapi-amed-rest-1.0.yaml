@@ -1,0 +1,523 @@
+openapi: "3.0.3"
+info:
+  description: The RESTful API, asynchronousMessageDelivery, operates within an asynchronous messaging architecture, serving as an intermediary for delivering messages from internal producers to external consumers. It decouples message producers and consumers, ensuring secure, and scalable message delivery without requiring producers and consumers to be active simultaneously. The message functions as an envelope that encapsulates a CloudEvent.
+  version: "1.0"
+  title: Asynchronous Message Delivery
+  contact:
+    name: AMeD team
+    email: EgovNoti-team@smals.be
+  license:
+    name: e-Gov 3.0
+    url: https://www.egov.securitesociale.be/fr/
+security:
+  - Oauth:
+      [ 'scope:rsz-onss:asynchronous:message-delivery-rest:consumer',
+        'scope:rsz-onss:asynchronous:message-delivery-rest:producer',
+        'scope:xx:monitoring' ]
+tags:
+  - name: Producer
+  - name: Consumer
+  - name: Monitoring
+servers:
+  - url: "/REST/asynchronousMessageDelivery/v1"
+paths:
+  /messageDeliveries/produce:
+    post:
+      tags:
+        - Producer
+      summary: Delivery request to deliver a message to one or more consumer(s)
+      description: As a message producer this API endpoint is used to do a delivery request of a message intended for delivery to one or more assigned consumer(s) by providing the concerned message to the Asynchronous Message Delivery system. This endpoint is only accessible for message producers.
+      operationId: sendMessage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MessageDeliveryRequest"
+      responses:
+        201:
+          description: created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Warnings"
+        default:
+          description: "error payload"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+      security:
+        - Oauth: [ 'scope:rsz-onss:asynchronous:message-delivery-rest:producer' ]
+  /messages/consume:
+    post:
+      tags:
+        - Consumer
+      summary: Retrieve new available messages
+      description: As a message consumer this API endpoint is used to retrieve all intended available messages. The consumer is identified by the expeditorId available in its OAuth token. Messages that are retrieved and acknowledged via the iterator mechanism will no longer be returned. To get access to this API endpoint a configuration of the REST channel via Chaman is required.
+      operationId: retrieveMessages
+      parameters:
+        - name: iterator
+          in: query
+          description: The last known iterator from which you want to retrieve the next messages. If this parameter is left blank, the last send messages are not acknowledged and are returned again by the service.
+          required: false
+          schema:
+            type: string
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessagesToConsult"
+        default:
+          description: "error payload"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+      security:
+        - Oauth: [ 'scope:rsz-onss:asynchronous:message-delivery-rest:consumer' ]
+
+  /health:
+    get:
+      tags:
+        - Monitoring
+      summary: Check health of the service
+      description: This resource is only available to supervision users
+      operationId: checkHealth
+      externalDocs:
+        url: "https://www.belgif.be/specification/rest/api-guide/#health"
+      responses:
+        "200":
+          "$ref": "#/components/responses/HealthUpOrDegradedResponse"
+        "503":
+          "$ref": "#/components/responses/HealthDownResponse"
+        default:
+          $ref: "#/components/responses/ProblemResponse"
+      security:
+        - Oauth:
+            [ 'scope:xx:monitoring' ]
+
+
+components:
+
+  securitySchemes:
+    Oauth:
+      type: oauth2
+      flows:
+
+        clientCredentials:
+          tokenUrl: 'https://privateservices-int.socialsecurity.be/REST/oauth/v5/token'
+          scopes:
+            'scope:rsz-onss:asynchronous:message-delivery-rest:producer': "This scope allows the producers to do a message delivery request to one or more consumer(s) through its expeditorId."
+            'scope:rsz-onss:asynchronous:message-delivery-rest:consumer': "This scope allows the consumers, identified by their expeditorId, to retrieve all intended available messages"
+            'scope:xx:monitoring': "This scope allows calling the /health endpoint"
+
+  schemas:
+    MessagesToConsult:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/AsynchronousMessage"
+        iterator:
+          type: string
+      description: A list of all available messages to consult by the consumer. Once retrieved successfully and acknowledged via the iterator mechanism, they will no longer be returned in the next calls.
+    MessageDeliveryRequest:
+      description: A request from the producer to deliver a message to a consumer. This contains the message to send as well as all the expeditorIds of the target consumers. The Asynchronous Message Delivery system will generate a message for each consumer to be delivered.
+      type: object
+      required:
+        - destinations
+        - message
+      properties:
+        destinations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Destination'
+        message:
+          $ref: "#/components/schemas/AsynchronousMessage"
+    Destination:
+      description: The identifiers of the consumer.
+      type: object
+      properties:
+        expeditorId:
+          type: integer
+          description: The unique identifier of the consumer. This is the key used by the consumer to fetch its messages.
+        enterpriseNumber:
+          $ref: '#/components/schemas/EnterpriseNumber'
+      required:
+        - expeditorId
+        - enterpriseNumber
+    EnterpriseNumber:
+      description: Identifier issued by CBE for a registered organization
+      type: string
+      pattern: '^[0-1]\d{9}$'
+    HealthStatus:
+      description: Response message for the API health
+      type: object
+      properties:
+        status:
+          description: "Level indicating the health status of the service: UP (functioning as expected), DOWN (suffering unexpected failures), DEGRADED (partly unavailable but service can be continued with reduced functionality), or a custom status value"
+          type: string
+      required:
+        - status
+
+    AsynchronousMessageBase: # extend this schema with allOf to define schemas for specific events, with constraints on data/data_base64 and type
+      type: object
+      description: Context attributes of an AsynchronousMessage in CloudEvent JSON format.
+      # An AsynchronousMessage is an extension of the CloudEvent format, also allowing other async exchanges than events.
+      properties:
+        specversion:
+          type: string
+          minLength: 1
+          maxLength: 25
+          description: The version of the CloudEvents specification used to represent the message.
+          example: "1.0"
+        id:
+          type: string
+          minLength: 1
+          maxLength: 150
+          description: Identifies the message. Producers MUST ensure that source + id is unique for each distinct message. If a duplicate message is re-sent (e.g. due to a network error) it MAY have the same id. Consumers MAY assume that Asynchronous Messages with identical source and id are duplicates.
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        type:
+          description: >
+            Type of the message.<br>
+            Often this attribute is used for routing, observability, policy enforcement, etc. 
+            The format of this is producer defined and might include information such as the version of the type.<br>
+
+            The type SHOULD be prefixed with a reverse-DNS name. The prefixed domain dictates the organization which defines the semantics of this message type.
+          type: string
+          minLength: 1
+          maxLength: 150
+          example: "be.belgif.example.meeting.v3.meetings.create"
+        service:
+          description: |
+            Name of the service (API) that defines the format and exchange protocol of this message.
+            Recommended to use reverse DNS notation, with the last segment being the major version number prefixed by the letter `v`.
+          type: string
+          minLength: 1
+          maxLength: 150
+          example: "be.belgif.example.meeting.v3"
+        source:
+          type: string
+          format: uri-reference
+          minLength: 1
+          maxLength: 150
+          description: >
+            Identifies the context in which the message was created.<br>
+            Often this will include information such as the type of the message source, the organization publishing the message or the process that produced the message. The exact syntax and semantics behind the data encoded in the URI is defined by the message producer.<br>
+
+            Producers MUST ensure that source + id is unique for each distinct message.<br>
+
+            An application MAY assign a unique source to each distinct producer, which makes it
+            easy to produce unique IDs since no other producer will have the same source.
+            The application MAY use UUIDs, URNs, DNS authorities or an application-specific
+            scheme to create unique source identifiers.<br>
+
+            An absolute URI is RECOMMENDED
+          example: "urn:async-source:client:123"
+        datacontenttype:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Media type of the payload (values of data or data_base64).
+            MUST adhere to the format specified in RFC 2046.
+          default: "application/json"
+          nullable: true
+          x-ignore-rules:
+            jsn-null: allow null to comply with CloudEvents 1.0 spec
+        subject:
+          type: string
+          minLength: 1
+          maxLength: 250
+          description: Subject of the message (optional, may also be only present in payload)
+          nullable: true
+          x-ignore-rules:
+            jsn-null: allow null to comply with CloudEvents 1.0 spec
+        time:
+          type: string
+          format: date-time
+          description: Timestamp of when the occurrence happened. If the time of the occurrence cannot be determined then this attribute MAY be set to some other time (such as the current time) by the CloudEvents producer, however all producers for the same source MUST be consistent in this respect. In other words, either they all use the actual time of the occurrence or they all use the same algorithm to determine the value used.
+          nullable: true
+          x-ignore-rules:
+            jsn-null: allow null to comply with CloudEvents 1.0 spec
+        dataschema:
+          description: Identifies the schema that data adheres to. Incompatible changes to the schema SHOULD be reflected by a different URI.
+          type: string
+          nullable: true
+          format: uri
+          x-ignore-rules:
+            jsn-null: allow null to comply with CloudEvents 1.0 spec
+      required: [ id, type, service, specversion, source ]
+      example:
+        {
+          "specversion": "1.0",
+          "id": "550e8400-e29b-41d4-a716-446655440000",
+          "service": "be.belgif.example.meeting.v3",
+          "type": "be.belgif.example.meeting.v3.meetings.create",
+          "source": "urn:async-source:client:123",
+          "subject": "132456",
+          "data": { "...": "..." }
+        }
+
+    AsynchronousMessage:
+      description: An asynchronous message represented using the [CloudEvents standard](https://github.com/cloudevents/spec).
+        An asynchronous message is a message exchanged between parties without requiring simultaneous presence.
+        An asynchronous message may be extended with additional context attributes, which should follow the naming and typing constraints specified by the [CloudEvents specification](https://github.com/cloudevents/spec/blob/main/cloudevents/spec.md#context-attributes).
+      allOf:
+        - $ref: "#/components/schemas/AsynchronousMessageBase"
+      type: object
+      properties:
+        data:
+          description: The message payload in JSON format
+          nullable: true
+          x-ignore-rules:
+            jsn-null: allow null to comply with CloudEvents 1.0 spec
+        data_base64:
+          description: Base64 encoded message payload. Must adhere to RFC4648. This property is mutually exclusive with `data`.
+          type: string
+          format: byte
+          nullable: true
+          x-ignore-rules:
+            jsn-null: allow null to comply with CloudEvents 1.0 spec
+          example: "Zm9vYg=="
+        relatedto:
+          description: The id of the request message for which this message is a reply. Must be present for reply or problemReply messages
+          type: string
+          minLength: 1
+          maxLength: 150
+          nullable: true
+          x-ignore-rules:
+            jsn-null: allow null to comply with CloudEvents 1.0 spec
+        relatedtosource:
+          description: The `source` of the message for which this message is a reply. This attribute MUST be present when `relatedTo` is present.
+          type: string
+          minLength: 1
+          maxLength: 150
+          nullable: true
+          x-ignore-rules:
+            jsn-null: allow null to comply with CloudEvents 1.0 spec
+      additionalProperties: true
+      # restrictions on additional properties are commented out because they don't work well for code generation
+      # additional context attributes:
+      #   MUST consist of lower-case letters [a-z] or digits [0-9] from the ASCII character set.
+      #   SHOULD start with a letter.
+      #   MUST be at least one character in length, and SHOULD NOT exceed 20 characters.
+      #   SHOULD be descriptive and terse.
+      # The CloudEvents specification only supports below types for context attributes, to maximize messaging protocol compatibility
+      # See https://github.com/cloudevents/spec/blob/main/cloudevents/spec.md#type-system and https://github.com/cloudevents/spec/blob/main/cloudevents/formats/json-format.md#22-type-system-mapping
+      #        oneOf:
+      #          - type: string  # includes attributes with base64-encoded, uri, uri-reference or timestamp types
+      #            nullable: true
+      #            x-ignore-rules:
+      #              jsn-null: allow null to comply with CloudEvents 1.0 spec
+      #          - type: integer
+      #            format: int32
+      #            nullable: true
+      #            x-ignore-rules:
+      #              jsn-null: allow null to comply with CloudEvents 1.0 spec
+      #          - type: boolean
+      #            nullable: true
+      #            x-ignore-rules:
+      #              jsn-null: allow null to comply with CloudEvents 1.0 spec
+      x-ignore-rules:
+        jsn-naming: allow underscore in data_base64 property in order to comply with the CloudEvents standard
+    Warnings:
+      type: object
+      properties:
+        warnings:
+          type: array
+          items:
+            $ref: "#/components/schemas/Warning"
+
+    Warning:
+      description: a Warning
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+          description: An absolute URI that identifies the problem type
+        title:
+          type: string
+          description: A short summary of the problem type. Written in English and readable for engineers (usually not suited for non technical stakeholders and not localized).
+          example: Message already produced
+        detail:
+          type: string
+          description: detail of the warning message
+          example: The message has already been produced to expeditorId 1234
+      required: [ type ]
+
+    Problem:
+      description: A Problem Details object (RFC 7807)
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+          description: An absolute URI that identifies the problem type
+        href:
+          type: string
+          format: uri
+          description: An absolute URI that, when dereferenced, provides human-readable documentation for the problem type (e.g. using HTML).
+        title:
+          type: string
+          description: A short summary of the problem type. Written in English and readable for engineers (usually not suited for non technical stakeholders and not localized).
+          example: Service Unavailable
+        status:
+          type: integer
+          format: int32
+          description: The HTTP status code generated by the origin server for this occurrence of the problem.
+          minimum: 400
+          maximum: 600
+          exclusiveMaximum: true # "If you have an error here, you are probably using the wrong JSON Schema specification or the unstable version editor-next.swagger.io . See https://github.com/belgif/openapi-problem/issues/11"
+          example: 503
+        detail:
+          type: string
+          description: A human-readable explanation specific to this occurrence of the problem
+        instance:
+          type: string
+          format: uri
+          description: An absolute URI reference that identifies the specific occurrence of the problem. It may or may not yield further information if dereferenced.
+  responses:
+    ProblemResponse:
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+      description: a problem
+    BadRequest:
+      description: "The input message is incorrect."
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          examples:
+            badRequest:
+              value:
+                type: urn:problem-type:belgif:badRequest
+                href: https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html
+                status: 400
+                title: Bad Request
+                detail: The input message is incorrect
+
+    Conflict:
+      description: "The request has already been served."
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          examples:
+            conflict:
+              value:
+                type: urn:problem-type:belgif:badRequest
+                href: https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html
+                status: 409
+                title: Conflict
+                detail: The resource has already been served
+    Unauthorized:
+      description: "The consumer must pass a valid access token in the Authorization HTTP header for each request to a secure resource."
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          examples:
+            noAccessToken:
+              value:
+                type: urn:problem-type:belgif:noAccessToken
+                href: https://www.belgif.be/specification/rest/api-guide/problems/noAccessToken.html
+                status: 401
+                title: No Access Token
+                detail: No Bearer access token found in Authorization HTTP header
+            invalidAccessToken:
+              value:
+                type: urn:problem-type:belgif:invalidAccessToken
+                href: https://www.belgif.be/specification/rest/api-guide/problems/invalidAccessToken.html
+                status: 401
+                title: Invalid Access Token
+                detail: The Bearer access token found in the Authorization HTTP header is invalid
+
+    Forbidden:
+      description: "The consumer access token doesn’t have the required scope to invoke the operation."
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          examples:
+            missingScope:
+              value:
+                type: urn:problem-type:belgif:missingScope
+                href: https://www.belgif.be/specification/rest/api-guide/problems/missingScope.html
+                status: 403
+                title: Missing Scope
+                detail: Forbidden to access the resource
+            missingPermission:
+              value:
+                type: urn:problem-type:belgif:missingPermission
+                href: https://www.belgif.be/specification/rest/api-guide/problems/missingPermission.html
+                status: 403
+                title: Missing Permission
+                detail: Not permitted to access the ressource
+
+    NotFound:
+      description: "The requested resource cannot be found."
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          examples:
+            resourceNotFound:
+              value:
+                type: urn:problem-type:belgif:resourceNotFound
+                href: https://www.belgif.be/specification/rest/api-guide/problems/resourceNotFound.html
+                status: 404
+                title: Resource Not Found
+                detail: No resource /enterprises found
+
+    InternalServerError:
+      description: "The server has encountered a situation it doesn’t know how to handle."
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+          examples:
+            internalServerError:
+              value:
+                type: urn:problem-type:belgif:internalServerError
+                href: https://www.belgif.be/specification/rest/api-guide/problems/internalServerError.html
+                status: 500
+                title: Internal Server Error
+
+    HealthUpOrDegradedResponse:
+      description: The service is UP or DEGRADED
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/HealthStatus"
+          examples:
+            responseUp:
+              description: API is available
+              value:
+                {
+                  "status": "UP"
+                }
+            responseDegraded:
+              description: API is available, but with reduced functionality
+              value:
+                {
+                  "status": "DEGRADED"
+                }
+    HealthDownResponse:
+      description: The service is DOWN
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/HealthStatus"
+          examples:
+            responseDown:
+              value:
+                {
+                  "status": "DOWN"
+                }

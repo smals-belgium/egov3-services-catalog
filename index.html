@@ -1,33 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>LTDS - Work Remuneration - REST API</title>
-  <link rel="stylesheet" href="technical_specs/lib4ui/swagger-ui.css" />
-  <style>
-    html { box-sizing: border-box; overflow-y: scroll; }
-    *, *:before, *:after { box-sizing: inherit; }
-    body { margin: 0; background: #fafafa; }
-  </style>
+	<meta charset="UTF-8">
+	<title>LTDS - Work Remuneration - REST API</title>
+	<link rel="stylesheet" href="technical_specs/lib4ui/swagger-ui.css"/>
+	<style>
+		html {
+			box-sizing: border-box;
+			overflow-y: scroll;
+		}
+
+		*, *:before, *:after {
+			box-sizing: inherit;
+		}
+
+		body {
+			margin: 0;
+			background: #fafafa;
+		}
+	</style>
 </head>
 <body>
-  <div id="swagger-ui"></div>
+<div id="swagger-ui"></div>
 
-  <script src="technical_specs/lib4ui/swagger-ui-bundle.js"></script>
-  <script src="technical_specs/lib4ui/swagger-ui-standalone-preset.js"></script>
-  <script>
-    window.onload = () => {
-      SwaggerUIBundle({
-        url: "technical_specs/salaryData-v1.yaml",
-        dom_id: "#swagger-ui",
-        deepLinking: true,
-        presets: [
-          SwaggerUIBundle.presets.apis,
-          SwaggerUIStandalonePreset
-        ],
-        layout: "StandaloneLayout"
-      });
-    };
-  </script>
+<script src="technical_specs/lib4ui/swagger-ui-bundle.js"></script>
+<script src="technical_specs/lib4ui/swagger-ui-standalone-preset.js"></script>
+<script>
+	window.onload = () => {
+		const specs = {
+			salary: "technical_specs/salaryData-v1.yaml",
+			amed: "technical_specs/openapi-amed-rest-1.0.yaml",
+		};
+		const params = new URLSearchParams(window.location.search);
+		const key = params.get("spec") || "salary";
+		const url = specs[key] || specs.salary;
+
+		SwaggerUIBundle({
+			url,
+			dom_id: "#swagger-ui",
+			deepLinking: true,
+			presets: [
+				SwaggerUIBundle.presets.apis,
+				SwaggerUIStandalonePreset
+			],
+			layout: "StandaloneLayout"
+		});
+	};
+</script>
 </body>
 </html>
