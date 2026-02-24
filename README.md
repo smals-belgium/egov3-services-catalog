@@ -7,7 +7,7 @@
 | Instructions | [Voir la documentation](https://raw.githubusercontent.com/smals-belgium/egov3-services-catalog/main/business_documentation/Instructions_FR.pdf)             | [Bekijk de documentatie](https://raw.githubusercontent.com/smals-belgium/egov3-services-catalog/main/business_documentation/Instructies_NL.pdf)              |
 | Glossary     | [Voir la documentation](https://raw.githubusercontent.com/smals-belgium/egov3-services-catalog/main/business_documentation/Glossaire_FR.pdf)                | [Bekijk de documentatie](https://raw.githubusercontent.com/smals-belgium/egov3-services-catalog/main/business_documentation/Glossarium_NL.pdf)               |
 | Annexes      | [Voir la documentation](https://raw.githubusercontent.com/smals-belgium/egov3-services-catalog/main/business_documentation/Annexes_Structur%C3%A9es_FR.zip) | [Bekijk de documentatie](https://raw.githubusercontent.com/smals-belgium/egov3-services-catalog/main/business_documentation/Gestructureerde_bijlagen_NL.zip) |
-| Controles    | [Voir la documentation](https://raw.githubusercontent.com/smals-belgium/egov3-services-catalog/main/business_documentation/Controles_FR.xlsx)               | [Bekijk de documentatie](https://raw.githubusercontent.com/smals-belgium/egov3-services-catalog/main/business_documentation/Controles_NL.xlsx)               |
+| Controls     | [Voir la documentation](https://raw.githubusercontent.com/smals-belgium/egov3-services-catalog/main/business_documentation/Controles_FR.xlsx)               | [Bekijk de documentatie](https://raw.githubusercontent.com/smals-belgium/egov3-services-catalog/main/business_documentation/Controles_NL.xlsx)               |
 
 ## Technical Documentation
 
