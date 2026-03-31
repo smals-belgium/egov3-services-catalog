@@ -25,7 +25,8 @@
 
 ## Technical Documentation
 
-| Type                | Description                                                                                                                                         |
-|---------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| Technical Schema    | [Retrieve the OpenAPI YAML](https://raw.githubusercontent.com/smals-belgium/egov3-services-catalog/main/technical_specs/openapi-amed-rest-1.0.yaml) |
-| Technical Schema UI | [Pretty print of the schema](https://smals-belgium.github.io/egov3-services-catalog/?spec=amed)                                                     |
+| Type                    | Description                                                                                                                                            |
+|-------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Technical Schema        | [Retrieve the OpenAPI YAML](https://raw.githubusercontent.com/smals-belgium/egov3-services-catalog/main/technical_specs/openapi-amed-rest-1.0.yaml)    |
+| Technical Schema UI     | [Pretty print of the schema](https://smals-belgium.github.io/egov3-services-catalog/?spec=amed)                                                        |
+| Rest Documentation (NL) | [Bekijk de documentatie](https://raw.githubusercontent.com/smals-belgium/egov3-services-catalog/main/technical_specs/AMD-REST-documentatie-NL-0.1.pdf) |

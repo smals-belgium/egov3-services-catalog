@@ -78,7 +78,34 @@ paths:
                 $ref: "#/components/schemas/Problem"
       security:
         - Oauth: [ 'scope:rsz-onss:asynchronous:message-delivery-rest:consumer' ]
-
+  /messages/resetIterator:
+    post:
+      tags:
+        - Consumer
+      summary: Reset the position of the iterator in the past
+      description: Using the iterator, you are evolving its position and retrieve the latest unseen messages. If for some reason, you need to jump back in time, use this endpoint to reset the iterator and go back in the past. It is not possible to reset an iterator for messages that are already expired.
+      operationId: resetIterator
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetIteratorRequest"
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResetIteratorResponse"
+        default:
+          description: "error payload"
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+      security:
+        - Oauth: [ 'scope:rsz-onss:asynchronous:message-delivery-rest:consumer' ]
   /health:
     get:
       tags:
@@ -122,9 +149,41 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AsynchronousMessage"
+        referenceTime:
+          type: string
+          format: date-time
+          description: The time that can be used as a reference to reset the current iterator position to. The reset of the iterator can be done through the /messages/resetIterator operation. It represents the timestamp of the oldest message of these items received by asynchronousMessageDelivery.
         iterator:
           type: string
       description: A list of all available messages to consult by the consumer. Once retrieved successfully and acknowledged via the iterator mechanism, they will no longer be returned in the next calls.
+
+    ResetIteratorRequest:
+
+      type: object
+      properties:
+        position:
+          $ref: '#/components/schemas/ResetPosition'
+        fromReferenceTime:
+          type: string
+          format: date-time
+          description: The time to which the iterator should be reset. If an iterator is reset to a point more than six months in the past, it will return the first available message. It is not possible to reset an iterator to a time later than the last acknowledged message. To create a valid request you should use either the fromReferenceTime parameter or the position parameter.
+          oneOf:
+            - required: [ fromReferenceTime ]
+              description: 'One of the params fromReferenceTime or position should be used.'
+            - required: [ position ]
+              description: 'One of the params fromReferenceTime or position should be used.'
+    ResetPosition:
+      type: string
+      enum:
+        - firstAvailable
+        - lastAcknowledged
+      description: To retrieve the first acknowledged message, reset the iterator position to 'firstAvailable'. To retrieve the last acknowledged message, reset the iterator position to 'lastAcknowledged'. To create a valid request you should use either the fromReferenceTime parameter or the position parameter.
+    ResetIteratorResponse:
+      type: object
+      properties:
+        iterator:
+          type: string
+      description: The new iterator to use to consume messages. All previous iterators are invalidated.
     MessageDeliveryRequest:
       description: A request from the producer to deliver a message to a consumer. This contains the message to send as well as all the expeditorIds of the target consumers. The Asynchronous Message Delivery system will generate a message for each consumer to be delivered.
       type: object
@@ -136,6 +195,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Destination'
+          minItems: 1
+          maxItems: 1000
         message:
           $ref: "#/components/schemas/AsynchronousMessage"
     Destination:
@@ -300,12 +361,12 @@ components:
           x-ignore-rules:
             jsn-null: allow null to comply with CloudEvents 1.0 spec
       additionalProperties: true
-      # restrictions on additional properties are commented out because they don't work well for code generation
-      # additional context attributes:
-      #   MUST consist of lower-case letters [a-z] or digits [0-9] from the ASCII character set.
-      #   SHOULD start with a letter.
-      #   MUST be at least one character in length, and SHOULD NOT exceed 20 characters.
-      #   SHOULD be descriptive and terse.
+        # restrictions on additional properties are commented out because they don't work well for code generation
+        # additional context attributes:
+      #       MUST consist of lower-case letters [a-z] or digits [0-9] from the ASCII character set.
+      #       SHOULD start with a letter.
+      #       MUST be at least one character in length, and SHOULD NOT exceed 20 characters.
+      #       SHOULD be descriptive and terse.
       # The CloudEvents specification only supports below types for context attributes, to maximize messaging protocol compatibility
       # See https://github.com/cloudevents/spec/blob/main/cloudevents/spec.md#type-system and https://github.com/cloudevents/spec/blob/main/cloudevents/formats/json-format.md#22-type-system-mapping
       #        oneOf:
