@@ -1,74 +1,77 @@
 openapi: 3.0.3
 info:
-  title: Salary Data - REST API
-  description: Service that allows to transmit salary data
+  title: "Salary Data - REST API"
+  description: "Service that allows to transmit salary data"
+  version: 1.0.3
   contact:
     name: LTDS team
     email: LTDS@smals.be
-  version: 0.8.0
 servers:
   - url: https://services.socialsecurity.be/REST/salaryData/v1
+#security: A compléter
 tags:
   - name: Calculation Results
-    description: Information about calculation results of salary data
+    description: "Information about calculation results of salary data"
   - name: Monitoring
-    description: Service monitoring
+    description: "Service monitoring"
+
 paths:
   /calculationResults:
     post:
       tags:
         - Calculation Results
-      summary: Submit calculation results of salary data for a relationship between
-        an enterprise and a natural person.
+      summary: Submit calculation results of salary data for a relationship between an enterprise and a natural person.
       operationId: submitCalculationResults
       requestBody:
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/Calculation"
+            examples:
+              fullCalculationExample:
+                $ref: "#/components/examples/FullCalculationRequest"
+              minimalCalculationExample:
+                $ref: "#/components/examples/MinimalCalculationRequest"
         required: true
       responses:
-        "201":
+        201:
           description: Created
           headers:
             Location:
-              description: Location of calculation results sent
-              style: simple
-              explode: false
               schema:
                 type: string
                 format: uri
-        "400":
+              description: Location of calculation results sent
+        400:
           description: Bad request
           content:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/SalaryDataInputValidationProblem"
-        "403":
-          description: Forbidden – the client does not have permission to access this
-            resource
+        403:
+          description: Forbidden – the client does not have permission to access this resource
           content:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/SalaryDataInputValidationProblem"
-        "409":
+        409:
           description: Conflict
           content:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/SalaryDataInputValidationProblem"
-        "500":
+        500:
           description: Internal server error
           content:
             application/problem+json:
               schema:
-                $ref: "#/components/schemas/Problem"
+                $ref: "../../belgif/problem/v1/problem-v1.yaml#/components/schemas/Problem"
         default:
           description: Default response
           content:
             application/problem+json:
               schema:
-                $ref: "#/components/schemas/Problem"
+                $ref: "../../belgif/problem/v1/problem-v1.yaml#/components/schemas/Problem"
       security:
         - Oauth:
             - scope:rsz-onss:management:ltds:input-rest:ltds
@@ -77,7 +80,7 @@ paths:
             - scope:rsz-onss:management:ltds:input-rest:provider
             - scope:rsz-onss:management:ltds:input-rest:professional
       x-oauth2-required-scopes: any
-      x-content-type: application/json
+
   /calculationResults/search:
     post:
       tags:
@@ -85,43 +88,29 @@ paths:
       summary: Retrieve a list of last situation of calculation results summaries
       operationId: searchCalculationResultSummaries
       parameters:
-        - name: lastValidatedOnly
-          in: query
-          description: "If true, the search returns only the last validated situation\
-          \ of a calculation result for each calculation result found."
-          required: false
-          style: form
-          explode: true
-          schema:
-            type: boolean
-            default: false
+        # Pagination
         - name: page
           in: query
-          description: Page number for pagination
-          required: false
-          style: form
-          explode: true
           schema:
-            minimum: 1
             type: integer
             default: 1
+            minimum: 1
+          description: Page number for pagination
+          required: false
         - name: pageSize
           in: query
-          description: Number of items per page
-          required: false
-          style: form
-          explode: true
           schema:
-            maximum: 100
-            minimum: 1
             type: integer
             default: 10
+            minimum: 1
+            maximum: 100
+          description: Number of items per page
+          required: false
+        # Sorting
         - name: sort
           in: query
-          description: "Field name for sorting, prefix with '-' for descending (e.g.,\
-          \ -startDate). Direction is ascending by default. Possible options are:\
-          \ startDate, endDate, enterpriseNumber, ssin, frequency, messageType, status"
           required: false
+          description: "Field name for sorting, prefix with '-' for descending (e.g., -startDate). Direction is ascending by default. Possible options are: startDate, endDate, enterpriseNumber, ssin, frequency, messageType, status"
           style: form
           explode: true
           schema:
@@ -133,40 +122,52 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/CalculationResultSearchRequest"
+            examples:
+              searchByEnterpriseAndDateRange:
+                $ref: "#/components/examples/SearchByEnterpriseAndDateRangeRequest"
+              searchBySsinAndStatus:
+                $ref: "#/components/examples/SearchBySsinAndStatusRequest"
+              searchByMultipleIds:
+                $ref: "#/components/examples/SearchByMultipleIdsRequest"
         required: true
       responses:
-        "200":
-          description: The requested resource was found or a search request returns
-            some content
+        200:
+          description: The requested resource was found or a search request returns some content
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/CalculationResultsCollection"
-        "400":
+              examples:
+                searchResultsMultipleItems:
+                  $ref: "#/components/examples/SearchResultsMultipleItemsResponse"
+                searchResultsSingleItem:
+                  $ref: "#/components/examples/SearchResultsSingleItemResponse"
+                searchResultsEmpty:
+                  $ref: "#/components/examples/SearchResultsEmptyResponse"
+        400:
           description: Bad request
           content:
             application/problem+json:
               schema:
-                $ref: "#/components/schemas/InputValidationProblem"
-        "403":
-          description: Forbidden – the client does not have permission to access this
-            resource
+                $ref: "../../belgif/problem/v1/problem-v1.yaml#/components/schemas/InputValidationProblem"
+        403:
+          description: Forbidden – the client does not have permission to access this resource
           content:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/SalaryDataInputValidationProblem"
-        "500":
+        500:
           description: Internal server error
           content:
             application/problem+json:
               schema:
-                $ref: "#/components/schemas/Problem"
+                $ref: "../../belgif/problem/v1/problem-v1.yaml#/components/schemas/Problem"
         default:
           description: Default response
           content:
             application/problem+json:
               schema:
-                $ref: "#/components/schemas/Problem"
+                $ref: "../../belgif/problem/v1/problem-v1.yaml#/components/schemas/Problem"
       security:
         - Oauth:
             - scope:rsz-onss:management:ltds:input-rest:ltds
@@ -176,63 +177,59 @@ paths:
             - scope:rsz-onss:management:ltds:input-rest:professional
             - scope:rsz-onss:management:ltds:input-rest:support
       x-oauth2-required-scopes: any
-      x-content-type: application/json
+
   /calculationResults/{calculationResultId}:
     get:
       tags:
         - Calculation Results
-      summary: Return last situation of calculation results of salary data for a given
-        id.
+      summary: Return last situation of calculation results of salary data for a given id.
       operationId: getCalculationResultsById
       parameters:
-        - name: calculationResultId
-          in: path
-          description: Universally Unique Identifier of a calculation result of salary
-            data.
-          required: true
-          style: simple
-          explode: false
-          schema:
-            $ref: "#/components/schemas/Uuid"
+        - $ref: "#/components/parameters/CalculationIdPathParameter"
       responses:
-        "200":
-          description: The requested resource was found or a search request returns
-            some content
+        200:
+          description: The requested resource was found or a search request returns some content
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Calculation"
-        "400":
+              examples:
+                inProgressCalculationResult:
+                  $ref: "#/components/examples/InProgressCalculationResponse"
+                validatedCalculationResult:
+                  $ref: "#/components/examples/ValidatedCalculationResponse"
+                rejectedCalculationResult:
+                  $ref: "#/components/examples/RejectedCalculationResponse"
+        400:
           description: Bad request
           content:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/SalaryDataInputValidationProblem"
-        "403":
-          description: Forbidden – the client does not have permission to access this
-            resource
+        403:
+          description: Forbidden – the client does not have permission to access this resource
           content:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/SalaryDataInputValidationProblem"
-        "404":
+        404:
           description: The requested resource was not found
           content:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/SalaryDataInputValidationProblem"
-        "500":
+        500:
           description: Internal server error
           content:
             application/problem+json:
               schema:
-                $ref: "#/components/schemas/Problem"
+                $ref: "../../belgif/problem/v1/problem-v1.yaml#/components/schemas/Problem"
         default:
           description: Default response
           content:
             application/problem+json:
               schema:
-                $ref: "#/components/schemas/Problem"
+                $ref: "../../belgif/problem/v1/problem-v1.yaml#/components/schemas/Problem"
       security:
         - Oauth:
             - scope:rsz-onss:management:ltds:input-rest:ltds
@@ -242,75 +239,68 @@ paths:
             - scope:rsz-onss:management:ltds:input-rest:professional
             - scope:rsz-onss:management:ltds:input-rest:support
       x-oauth2-required-scopes: any
+
     put:
       tags:
         - Calculation Results
       summary: Update calculation results of salary data by id.
       operationId: updateCalculationResultsById
       parameters:
-        - name: calculationResultId
-          in: path
-          description: Universally Unique Identifier of a calculation result of salary
-            data.
-          required: true
-          style: simple
-          explode: false
-          schema:
-            $ref: "#/components/schemas/Uuid"
+        - $ref: "#/components/parameters/CalculationIdPathParameter"
       requestBody:
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/Calculation"
+            examples:
+              fullCalculationExample:
+                $ref: "#/components/examples/FullCalculationRequest"
         required: true
       responses:
-        "204":
+        204:
           description: No content
           headers:
             Location:
-              description: Location of modified relation
-              style: simple
-              explode: false
               schema:
                 type: string
                 format: uri
-        "400":
+              description: Location of modified relation
+        400:
           description: Bad request
           content:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/SalaryDataInputValidationProblem"
-        "403":
-          description: Forbidden – the client does not have permission to access this
-            resource
+        403:
+          description: Forbidden – the client does not have permission to access this resource
           content:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/SalaryDataInputValidationProblem"
-        "404":
+        404:
           description: The requested resource was not found
           content:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/SalaryDataInputValidationProblem"
-        "409":
+        409:
           description: Conflict
           content:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/SalaryDataInputValidationProblem"
-        "500":
+        500:
           description: Internal server error
           content:
             application/problem+json:
               schema:
-                $ref: "#/components/schemas/Problem"
+                $ref: "../../belgif/problem/v1/problem-v1.yaml#/components/schemas/Problem"
         default:
           description: Default response
           content:
             application/problem+json:
               schema:
-                $ref: "#/components/schemas/Problem"
+                $ref: "../../belgif/problem/v1/problem-v1.yaml#/components/schemas/Problem"
       security:
         - Oauth:
             - scope:rsz-onss:management:ltds:input-rest:ltds
@@ -319,95 +309,77 @@ paths:
             - scope:rsz-onss:management:ltds:input-rest:provider
             - scope:rsz-onss:management:ltds:input-rest:professional
       x-oauth2-required-scopes: any
-      x-content-type: application/json
+
     delete:
       tags:
         - Calculation Results
       summary: Delete calculation results of salary data by id.
       operationId: cancelCalculationResultsById
       parameters:
-        - name: calculationResultId
-          in: path
-          description: Universally Unique Identifier of a calculation result of salary
-            data.
-          required: true
-          style: simple
-          explode: false
-          schema:
-            $ref: "#/components/schemas/Uuid"
+        - $ref: "#/components/parameters/CalculationIdPathParameter"
         - name: enterpriseNumber
           in: query
           description: Filter by enterprise number
           required: false
-          style: form
-          explode: true
           schema:
-            $ref: "#/components/schemas/EnterpriseNumber"
+            $ref: "../../belgif/organization/identifier/v1/organization-identifier-v1.yaml#/components/schemas/EnterpriseNumber"
         - name: nssoNumber
           in: query
           description: Filter by NSSO number
           required: false
-          style: form
-          explode: true
           schema:
-            $ref: "#/components/schemas/EmployerId"
+            $ref: "../../belgif/employment/identifier/v1/employment-identifier-v1.yaml#/components/schemas/EmployerId"
         - name: ssin
           in: query
-          description: Filter by Social Security Identification Number issued by the
-            National Register or CBSS
+          description: Filter by Social Security Identification Number issued by the National Register or CBSS
           required: true
-          style: form
-          explode: true
           schema:
-            $ref: "#/components/schemas/Ssin"
+            $ref: "../../belgif/person/identifier/v1/person-identifier-v1.yaml#/components/schemas/Ssin"
         - name: declarantReference
           in: query
           description: Filter by relation declarant reference
           required: true
-          style: form
-          explode: true
           schema:
             $ref: "#/components/schemas/DeclarantReference"
       responses:
-        "204":
+        204:
           description: No content
-        "400":
+        400:
           description: Bad request
           content:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/SalaryDataInputValidationProblem"
-        "403":
-          description: Forbidden – the client does not have permission to access this
-            resource
+        403:
+          description: Forbidden – the client does not have permission to access this resource
           content:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/SalaryDataInputValidationProblem"
-        "404":
+        404:
           description: The requested resource was not found
           content:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/SalaryDataInputValidationProblem"
-        "409":
+        409:
           description: Conflict
           content:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/SalaryDataInputValidationProblem"
-        "500":
+        500:
           description: Internal server error
           content:
             application/problem+json:
               schema:
-                $ref: "#/components/schemas/Problem"
+                $ref: "../../belgif/problem/v1/problem-v1.yaml#/components/schemas/Problem"
         default:
           description: Default response
           content:
             application/problem+json:
               schema:
-                $ref: "#/components/schemas/Problem"
+                $ref: "../../belgif/problem/v1/problem-v1.yaml#/components/schemas/Problem"
       security:
         - Oauth:
             - scope:rsz-onss:management:ltds:input-rest:ltds
@@ -416,62 +388,57 @@ paths:
             - scope:rsz-onss:management:ltds:input-rest:provider
             - scope:rsz-onss:management:ltds:input-rest:professional
       x-oauth2-required-scopes: any
+
   /calculationResults/{calculationResultId}/lastValidated:
     get:
       tags:
         - Calculation Results
-      summary: Return the last validated situation of calculation results for a given
-        calculation ID.
+      summary: Return the last validated situation of calculation results for a given calculation ID.
       operationId: getLastValidatedCalculationResultById
       parameters:
-        - name: calculationResultId
-          in: path
-          description: Universally Unique Identifier of a calculation result of salary
-            data.
-          required: true
-          style: simple
-          explode: false
-          schema:
-            $ref: "#/components/schemas/Uuid"
+        - $ref: "#/components/parameters/CalculationIdPathParameter"
       responses:
-        "200":
-          description: The requested resource was found or a search request returns
-            some content
+        200:
+          description: The requested resource was found or a search request returns some content
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Calculation"
-        "400":
+              examples:
+                validatedCalculationResult:
+                  $ref: "#/components/examples/ValidatedCalculationResponse"
+                rejectedCalculationResult:
+                  $ref: "#/components/examples/RejectedCalculationResponse"
+        400:
           description: Bad request
           content:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/SalaryDataInputValidationProblem"
-        "403":
-          description: Forbidden – the client does not have permission to access this
-            resource
+        403:
+          description: Forbidden – the client does not have permission to access this resource
           content:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/SalaryDataInputValidationProblem"
-        "404":
+        404:
           description: The requested resource was not found
           content:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/SalaryDataInputValidationProblem"
-        "500":
+        500:
           description: Internal server error
           content:
             application/problem+json:
               schema:
-                $ref: "#/components/schemas/Problem"
+                $ref: "../../belgif/problem/v1/problem-v1.yaml#/components/schemas/Problem"
         default:
           description: Default response
           content:
             application/problem+json:
               schema:
-                $ref: "#/components/schemas/Problem"
+                $ref: "../../belgif/problem/v1/problem-v1.yaml#/components/schemas/Problem"
       security:
         - Oauth:
             - scope:rsz-onss:management:ltds:input-rest:ltds
@@ -481,113 +448,840 @@ paths:
             - scope:rsz-onss:management:ltds:input-rest:professional
             - scope:rsz-onss:management:ltds:input-rest:support
       x-oauth2-required-scopes: any
+
   /health:
     get:
       tags:
         - Monitoring
       summary: Check health of the service.
-      externalDocs:
-        url: https://www.belgif.be/specification/rest/api-guide/#health
       operationId: checkHealth
+      externalDocs:
+        url: "https://www.belgif.be/specification/rest/api-guide/#health"
       responses:
-        "200":
+        200:
           description: The service is UP or DEGRADED
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/HealthStatus"
+                $ref: "../../belgif/common/v1/common-v1.yaml#/components/schemas/HealthStatus"
               examples:
                 responseUp:
                   value:
-                    status: UP
+                    {
+                      "status": "UP"
+                    }
                 responseDegraded:
                   value:
-                    status: DEGRADED
-        "503":
+                    {
+                      "status": "DEGRADED"
+                    }
+        503:
           description: The service is DOWN.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/HealthStatus"
+                $ref: "../../belgif/common/v1/common-v1.yaml#/components/schemas/HealthStatus"
               examples:
                 responseDown:
                   value:
-                    status: DOWN
-        "500":
-          description: a problem
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
+                    {
+                      "status": "DOWN"
+                    }
+        500:
+          $ref: "../../belgif/problem/v1/problem-v1.yaml#/components/responses/ProblemResponse"
         default:
           description: Default response
           content:
             application/problem+json:
               schema:
-                $ref: "#/components/schemas/Problem"
+                $ref: "../../belgif/problem/v1/problem-v1.yaml#/components/schemas/Problem"
       security: [ ]
+
 components:
+  securitySchemes:
+    Oauth:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: 'https://oauth-v5.socialsecurity.be/oauth2/authorize'
+          tokenUrl: 'https://services.socialsecurity.be/REST/oauth/v5/token'
+          scopes:
+            scope:rsz-onss:management:ltds:input-rest:employer: LTDS - Scope to be used by employers.
+            scope:rsz-onss:management:ltds:input-rest:representative: LTDS - Scope to be used by representatives.
+            scope:rsz-onss:management:ltds:input-rest:provider: LTDS - Scope to be used by service provider.
+            scope:rsz-onss:management:ltds:input-rest:professional: LTDS - Scope to be used by professionals.
+            scope:rsz-onss:management:ltds:input-rest:support: LTDS - Scope to be used by GATB.
+            scope:rsz-onss:management:ltds:input-rest:monitoring: LTDS - Scope to be used by monitoring.
+        clientCredentials:
+          tokenUrl: 'https://services.socialsecurity.be/REST/oauth/v5/token'
+          scopes:
+            scope:rsz-onss:management:ltds:input-rest:ltds: LTDS - Scope to be used by Employer/ServiceProvider/Representative(SocialSecretariat).
+            scope:rsz-onss:management:ltds:input-rest:monitoring: LTDS - Scope to be used by monitoring.
+  examples:
+    FullCalculationRequest:
+      summary: Complete calculation result with all possible features including services, fiscal features, and social features
+      value:
+        id: "40de65a6-cb60-4624-a119-20a696359d76"
+        frequency: 3
+        enterprise:
+          enterpriseNumber: "0406798006"
+        naturalPerson:
+          ssin: "92110124387"
+        startDate: "2026-09-01"
+        endDate: "2026-09-30"
+        relation:
+          type: 999
+          declarantReference: "012345676"
+        services:
+          - type: "1102001"
+            endDate: "2026-09-01"
+            startDate: "2026-09-01"
+            numberOfHours: 760
+            serviceFeatures:
+              overtimeType: 1
+              overtimeIncludedInCalendar: 1
+              subjectionToSocialSecurityContribution: 1
+            externalReference: "SERV_00"
+          - type: "1203001"
+            startDate: "2026-09-02"
+            numberOfHours: 760
+            externalReference: "SERV_01"
+          - type: "1101001"
+            startDate: "2026-09-03"
+            numberOfHours: 760
+            externalReference: "SERV_02"
+        fiscalFeatures:
+          - endDate: "2026-09-13"
+            retired: 2
+            startDate: "2026-09-01"
+            belgianResident: 1
+            civilStatusType: 2
+            incomeOfPartner: 1
+            employmentStatus: "12345"
+            crossBorderWorker: 2
+            externalReference: "FISC_00"
+            numberOfDependents: 0
+            disabilityIndicator: 1
+            disabilityOfPartner: 2
+            numberOfDependentChildren: 0
+            numberOfDisabledDependents: 0
+            numberOfDependentsNeedingCare: 0
+            numberOfDependentDisabledChildren: 0
+        calculationDate: "2026-09-26"
+        identifyingSocialFeatures:
+          - endDate: "2026-09-30"
+            startDate: "2026-09-01"
+            workerCode: "00675"
+            employerClass: "00096"
+            externalReference: "ID_SOC_00"
+            operationalSocialFeatures:
+              - endDate: "2026-09-30"
+                startDate: "2026-09-01"
+                weeklyHours:
+                  - type: "s"
+                    externalReference: "W_HRS_00"
+                    effectiveAverageWeeklyWorkingHours: 3800
+                    annualAverageWeeklyPaidWorkingHours: 3800
+                  - type: "q"
+                    externalReference: "W_HRS_01"
+                    effectiveAverageWeeklyWorkingHours: 3800
+                    annualAverageWeeklyPaidWorkingHours: 3800
+                contractType: 1
+                externalReference: "OP_SOC_00"
+                financialElements:
+                  - code: "0010001"
+                    roles: [ 1 ]
+                    amount: 445918
+                    externalReference: "FINEL_00"
+                  - code: "0030003"
+                    roles: [ 2, 10 ]
+                    amount: 1500
+                    externalReference: "FINEL_01"
+                  - code: "0070001"
+                    roles: [ 10 ]
+                    amount: 2654
+                    voucherFeatures:
+                      - amountPerUnit: 660
+                        numberOfUnits: 16
+                        externalReference: "VOUCH_00"
+                    externalReference: "FINEL_07"
+                jointCommissionNumber: "001"
+                establishmentUnitNumber: "2138236128"
+                operationalSocialFeaturesDetail:
+                  gradualWorkResumption:
+                    endDate: "2026-09-30"
+                    startDate: "2026-09-01"
+                    externalReference: "GR_WR_00"
+                    weeklyMaxNumberOfHoursAllowed: 20
+            identifyingSocialFeaturesDetail:
+              jobs:
+                - title: "ambtenaar"
+                  endDate: "2026-09-30"
+                  startDate: "2026-09-01"
+                  externalReference: "JOB_00"
+              dismissal:
+                endDate: "2026-09-30"
+                startDate: "2026-09-01"
+                externalReference: "DISM_00"
+                noticePeriodStartDate: "2026-09-01"
+              starterJobs:
+                - type: 1
+                  endDate: "2026-09-30"
+                  startDate: "2026-09-01"
+                  externalReference: "START_00"
+
+    MinimalCalculationRequest:
+      summary: Minimal calculation request
+      value:
+        id: "a1b2c3d4-e5f6-4789-a012-b3c4d5e6f789"
+        startDate: "2026-09-01"
+        endDate: "2026-09-30"
+        calculationDate: "2026-09-26"
+        frequency: 3
+        relation:
+          type: 1
+          declarantReference: "MIN_REF_001"
+        enterprise:
+          enterpriseNumber: "0406798006"
+        naturalPerson:
+          ssin: "92110124387"
+
+    InProgressCalculationResponse:
+      summary: Calculation result that's still being processed
+      value:
+        id: "b64b054a-3113-40ec-87dc-7be3e09652b7"
+        startDate: "2026-09-01"
+        endDate: "2026-09-30"
+        calculationDate: "2026-09-26"
+        frequency: 3
+        relation:
+          declarantReference: "012345676"
+          type: 999
+        enterprise:
+          enterpriseNumber: "0406798006"
+        naturalPerson:
+          ssin: "92110124387"
+        services:
+          - externalReference: "SERV_00"
+            type: "1102001"
+            startDate: "2026-09-01"
+            endDate: "2026-09-01"
+            numberOfHours: 760
+            serviceFeatures:
+              overtimeType: 1
+              subjectionToSocialSecurityContribution: 1
+              overtimeIncludedInCalendar: 1
+          - externalReference: "SERV_01"
+            type: "1203001"
+            startDate: "2026-09-02"
+            numberOfHours: 760
+        identifyingSocialFeatures:
+          - externalReference: "ID_SOC_00"
+            startDate: "2026-09-01"
+            endDate: "2026-09-30"
+            employerClass: "00096"
+            workerCode: "00675"
+            operationalSocialFeatures:
+              - externalReference: "OP_SOC_00"
+                startDate: "2026-09-01"
+                endDate: "2026-09-30"
+                contractType: 1
+                establishmentUnitNumber: "2138236128"
+                jointCommissionNumber: "001"
+                operationalSocialFeaturesDetail:
+                  gradualWorkResumption:
+                    externalReference: "GR_WR_00"
+                    startDate: "2026-09-01"
+                    endDate: "2026-09-30"
+                    weeklyMaxNumberOfHoursAllowed: 20
+                weeklyHours:
+                  - externalReference: "W_HRS_00"
+                    type: "s"
+                    effectiveAverageWeeklyWorkingHours: 3800
+                    annualAverageWeeklyPaidWorkingHours: 3800
+                  - externalReference: "W_HRS_01"
+                    type: "q"
+                    effectiveAverageWeeklyWorkingHours: 3800
+                    annualAverageWeeklyPaidWorkingHours: 3800
+                financialElements:
+                  - externalReference: "FINEL_00"
+                    code: "0010001"
+                    amount: 445918
+                    roles: [ 1 ]
+                  - externalReference: "FINEL_01"
+                    code: "0030003"
+                    amount: 1500
+                    roles: [ 2, 10 ]
+                  - externalReference: "FINEL_07"
+                    code: "0070001"
+                    amount: 2654
+                    roles: [ 10 ]
+                    voucherFeatures:
+                      - externalReference: "VOUCH_00"
+                        numberOfUnits: 16
+                        amountPerUnit: 660
+            identifyingSocialFeaturesDetail:
+              jobs:
+                - externalReference: "JOB_00"
+                  startDate: "2026-09-01"
+                  endDate: "2026-09-30"
+                  title: "ambtenaar"
+              dismissal:
+                externalReference: "DISM_00"
+                startDate: "2026-09-01"
+                endDate: "2026-09-30"
+                noticePeriodStartDate: "2026-09-01"
+              starterJobs:
+                - externalReference: "START_00"
+                  startDate: "2026-09-01"
+                  endDate: "2026-09-30"
+                  type: 1
+        fiscalFeatures:
+          - externalReference: "FISC_00"
+            startDate: "2026-09-01"
+            endDate: "2026-09-13"
+            employmentStatus: "12345"
+            civilStatusType: 2
+            numberOfDependentChildren: 0
+            numberOfDependentDisabledChildren: 0
+            numberOfDependents: 0
+            numberOfDisabledDependents: 0
+            disabilityIndicator: 1
+            crossBorderWorker: 2
+            belgianResident: 1
+            incomeOfPartner: 1
+            disabilityOfPartner: 2
+            numberOfDependentsNeedingCare: 0
+            retired: 2
+        channel: "rest"
+        receivedDate: "2026-05-04T07:40:08.021565+02:00"
+        validation:
+          processingStatus: "inProgress"
+          messageType: "creation"
+
+    ValidatedCalculationResponse:
+      summary: Calculation result that's finished his validation process and has no blocking issues
+      value:
+        id: "b64b054a-3113-40ec-87dc-7be3e09652b7"
+        startDate: "2026-09-01"
+        endDate: "2026-09-30"
+        calculationDate: "2026-09-26"
+        frequency: 3
+        relation:
+          declarantReference: "012345676"
+          type: 999
+        enterprise:
+          enterpriseNumber: "0406798006"
+        naturalPerson:
+          ssin: "92110124387"
+        services:
+          - externalReference: "SERV_00"
+            type: "1102001"
+            startDate: "2026-09-01"
+            endDate: "2026-09-01"
+            numberOfHours: 760
+            serviceFeatures:
+              overtimeType: 1
+              subjectionToSocialSecurityContribution: 1
+              overtimeIncludedInCalendar: 1
+          - externalReference: "SERV_01"
+            type: "1203001"
+            startDate: "2026-09-02"
+            numberOfHours: 760
+        identifyingSocialFeatures:
+          - externalReference: "ID_SOC_00"
+            startDate: "2026-09-01"
+            endDate: "2026-09-30"
+            employerClass: "00096"
+            workerCode: "00675"
+            operationalSocialFeatures:
+              - externalReference: "OP_SOC_00"
+                startDate: "2026-09-01"
+                endDate: "2026-09-30"
+                contractType: 1
+                establishmentUnitNumber: "2138236128"
+                jointCommissionNumber: "001"
+                operationalSocialFeaturesDetail:
+                  gradualWorkResumption:
+                    externalReference: "GR_WR_00"
+                    startDate: "2026-09-01"
+                    endDate: "2026-09-30"
+                    weeklyMaxNumberOfHoursAllowed: 20
+                weeklyHours:
+                  - externalReference: "W_HRS_00"
+                    type: "s"
+                    effectiveAverageWeeklyWorkingHours: 3800
+                    annualAverageWeeklyPaidWorkingHours: 3800
+                  - externalReference: "W_HRS_01"
+                    type: "q"
+                    effectiveAverageWeeklyWorkingHours: 3800
+                    annualAverageWeeklyPaidWorkingHours: 3800
+                financialElements:
+                  - externalReference: "FINEL_00"
+                    code: "0010001"
+                    amount: 445918
+                    roles: [ 1 ]
+                  - externalReference: "FINEL_01"
+                    code: "0030003"
+                    amount: 1500
+                    roles: [ 2, 10 ]
+                  - externalReference: "FINEL_07"
+                    code: "0070001"
+                    amount: 2654
+                    roles: [ 10 ]
+                    voucherFeatures:
+                      - externalReference: "VOUCH_00"
+                        numberOfUnits: 16
+                        amountPerUnit: 660
+            identifyingSocialFeaturesDetail:
+              jobs:
+                - externalReference: "JOB_00"
+                  startDate: "2026-09-01"
+                  endDate: "2026-09-30"
+                  title: "ambtenaar"
+              dismissal:
+                externalReference: "DISM_00"
+                startDate: "2026-09-01"
+                endDate: "2026-09-30"
+                noticePeriodStartDate: "2026-09-01"
+              starterJobs:
+                - externalReference: "START_00"
+                  startDate: "2026-09-01"
+                  endDate: "2026-09-30"
+                  type: 1
+        fiscalFeatures:
+          - externalReference: "FISC_00"
+            startDate: "2026-09-01"
+            endDate: "2026-09-13"
+            employmentStatus: "12345"
+            civilStatusType: 2
+            numberOfDependentChildren: 0
+            numberOfDependentDisabledChildren: 0
+            numberOfDependents: 0
+            numberOfDisabledDependents: 0
+            disabilityIndicator: 1
+            crossBorderWorker: 2
+            belgianResident: 1
+            incomeOfPartner: 1
+            disabilityOfPartner: 2
+            numberOfDependentsNeedingCare: 0
+            retired: 2
+        channel: "rest"
+        receivedDate: "2026-05-04T07:40:08.021565+02:00"
+        validation:
+          processingStatus: "validated"
+          messageType: "creation"
+          date: "2026-05-04T08:40:08.021565+02:00"
+
+    RejectedCalculationResponse:
+      summary: Rejected calculation result with validation issues
+      value:
+        id: "b7e39578-abc4-4ea8-b142-c5b3224dcdaa"
+        startDate: "2026-09-01"
+        endDate: "2026-09-30"
+        calculationDate: "2026-09-26"
+        frequency: 3
+        relation:
+          declarantReference: "012345676"
+          type: 999
+        enterprise:
+          enterpriseNumber: "0406798006"
+        naturalPerson:
+          ssin: "00185370491"
+        services:
+          - externalReference: "SERV_00"
+            type: "1102001"
+            startDate: "2026-09-01"
+            endDate: "2026-09-01"
+            numberOfHours: 760
+            serviceFeatures:
+              overtimeType: 1
+              subjectionToSocialSecurityContribution: 1
+              overtimeIncludedInCalendar: 1
+          - externalReference: "SERV_01"
+            type: "1203001"
+            startDate: "2026-09-02"
+            numberOfHours: 760
+          - externalReference: "SERV_02"
+            type: "1101001"
+            startDate: "2026-09-03"
+            numberOfHours: 760
+          - externalReference: "SERV_03"
+            type: "1101001"
+            startDate: "2026-09-04"
+            numberOfHours: 760
+          - externalReference: "SERV_04"
+            type: "1101001"
+            startDate: "2026-09-05"
+            numberOfHours: 760
+          - externalReference: "SERV_05"
+            type: "1299010"
+            startDate: "2026-09-06"
+            numberOfHours: 0
+          - externalReference: "SERV_06"
+            type: "1299010"
+            startDate: "2026-09-07"
+            numberOfHours: 0
+          - externalReference: "SERV_07"
+            type: "1101001"
+            startDate: "2026-09-08"
+            numberOfHours: 760
+          - externalReference: "SERV_08"
+            type: "1203001"
+            startDate: "2026-09-09"
+            numberOfHours: 760
+          - externalReference: "SERV_09"
+            type: "1101001"
+            startDate: "2026-09-10"
+            numberOfHours: 760
+          - externalReference: "SERV_10"
+            type: "1101001"
+            startDate: "2026-09-11"
+            numberOfHours: 760
+          - externalReference: "SERV_11"
+            type: "1101001"
+            startDate: "2026-09-12"
+            numberOfHours: 760
+          - externalReference: "SERV_12"
+            type: "1299010"
+            startDate: "2026-09-13"
+            numberOfHours: 0
+          - externalReference: "SERV_13"
+            type: "1299010"
+            startDate: "2026-09-14"
+            numberOfHours: 0
+          - externalReference: "SERV_14"
+            type: "1101001"
+            startDate: "2026-09-15"
+            numberOfHours: 760
+          - externalReference: "SERV_15"
+            type: "1101001"
+            startDate: "2026-09-16"
+            numberOfHours: 760
+          - externalReference: "SERV_16"
+            type: "1101001"
+            startDate: "2026-09-17"
+            numberOfHours: 760
+          - externalReference: "SERV_17"
+            type: "1101001"
+            startDate: "2026-09-18"
+            numberOfHours: 760
+          - externalReference: "SERV_18"
+            type: "1101001"
+            startDate: "2026-09-19"
+            numberOfHours: 760
+          - externalReference: "SERV_19"
+            type: "1299010"
+            startDate: "2026-09-20"
+            numberOfHours: 0
+          - externalReference: "SERV_20"
+            type: "1299010"
+            startDate: "2026-09-21"
+            numberOfHours: 0
+          - externalReference: "SERV_21"
+            type: "1203002"
+            startDate: "2026-09-22"
+            numberOfHours: 760
+          - externalReference: "SERV_22"
+            type: "1203002"
+            startDate: "2026-09-23"
+            numberOfHours: 760
+          - externalReference: "SERV_23"
+            type: "1298007"
+            startDate: "2026-09-24"
+            numberOfHours: 760
+          - externalReference: "SERV_24"
+            type: "1298007"
+            startDate: "2026-09-25"
+            numberOfHours: 760
+          - externalReference: "SERV_25"
+            type: "1298007"
+            startDate: "2026-09-26"
+            numberOfHours: 760
+          - externalReference: "SERV_26"
+            type: "1299010"
+            startDate: "2026-09-27"
+            numberOfHours: 0
+          - externalReference: "SERV_27"
+            type: "1101001"
+            startDate: "2026-09-28"
+            numberOfHours: 760
+          - externalReference: "SERV_28"
+            type: "1101001"
+            startDate: "2026-09-29"
+            numberOfHours: 760
+          - externalReference: "SERV_29"
+            type: "1203001"
+            startDate: "2026-09-30"
+            numberOfHours: 760
+        identifyingSocialFeatures:
+          - externalReference: "ID_SOC_00"
+            startDate: "2026-09-01"
+            endDate: "2026-09-30"
+            employerClass: "00096"
+            workerCode: "00675"
+            operationalSocialFeatures:
+              - externalReference: "OP_SOC_00"
+                startDate: "2026-09-01"
+                endDate: "2026-09-30"
+                contractType: 1
+                establishmentUnitNumber: "2138236128"
+                jointCommissionNumber: "001"
+                operationalSocialFeaturesDetail:
+                  gradualWorkResumption:
+                    externalReference: "GR_WR_00"
+                    startDate: "2026-09-01"
+                    endDate: "2026-09-30"
+                    weeklyMaxNumberOfHoursAllowed: 20
+                weeklyHours:
+                  - externalReference: "W_HRS_00"
+                    type: "s"
+                    effectiveAverageWeeklyWorkingHours: 3800
+                    annualAverageWeeklyPaidWorkingHours: 3800
+                  - externalReference: "W_HRS_01"
+                    type: "q"
+                    effectiveAverageWeeklyWorkingHours: 3800
+                    annualAverageWeeklyPaidWorkingHours: 3800
+                financialElements:
+                  - externalReference: "FINEL_00"
+                    code: "0010001"
+                    amount: 445918
+                    roles: [ 1 ]
+                  - externalReference: "FINEL_01"
+                    code: "0030003"
+                    amount: 1500
+                    roles: [ 2, 10 ]
+                  - externalReference: "FINEL_02"
+                    code: "0030001"
+                    amount: 4245
+                    roles: [ 9 ]
+                  - externalReference: "FINEL_03"
+                    code: "0120001"
+                    amount: 15883
+                    roles: [ 3 ]
+                  - externalReference: "FINEL_04"
+                    code: "0130001"
+                    amount: 108938
+                    roles: [ 7 ]
+                  - externalReference: "FINEL_05"
+                    code: "0120018"
+                    amount: 33444
+                    roles: [ 3 ]
+                  - externalReference: "FINEL_06"
+                    code: "0120021"
+                    amount: 4373
+                    roles: [ 7 ]
+                  - externalReference: "FINEL_07"
+                    code: "0070001"
+                    amount: 2654
+                    roles: [ 10 ]
+                    voucherFeatures:
+                      - externalReference: "VOUCH_00"
+                        numberOfUnits: 16
+                        amountPerUnit: 660
+            identifyingSocialFeaturesDetail:
+              jobs:
+                - externalReference: "JOB_00"
+                  startDate: "2026-09-01"
+                  endDate: "2026-09-30"
+                  title: "ambtenaar"
+              dismissal:
+                externalReference: "DISM_00"
+                startDate: "2026-09-01"
+                endDate: "2026-09-30"
+                noticePeriodStartDate: "2026-09-01"
+              starterJobs:
+                - externalReference: "START_00"
+                  startDate: "2026-09-01"
+                  endDate: "2026-09-30"
+                  type: 1
+            financialElements: [ ]
+        fiscalFeatures:
+          - externalReference: "FISC_00"
+            startDate: "2026-09-01"
+            endDate: "2026-09-13"
+            employmentStatus: "12345"
+            civilStatusType: 2
+            numberOfDependentChildren: 0
+            numberOfDependentDisabledChildren: 0
+            numberOfDependents: 0
+            numberOfDisabledDependents: 0
+            disabilityIndicator: 1
+            crossBorderWorker: 2
+            belgianResident: 1
+            incomeOfPartner: 1
+            disabilityOfPartner: 2
+            numberOfDependentsNeedingCare: 0
+            retired: 2
+            financialElements: [ ]
+        channel: "rest"
+        receivedDate: "2026-05-04T07:38:59.039151+02:00"
+        validation:
+          processingStatus: "rejected"
+          messageType: "creation"
+          issues:
+            - type: "urn:problem-type:nsso:input-validation:salaryData:invalidControlNumber"
+              title: "Invalid checksum"
+              in: "body"
+              name: "naturalPerson.ssin"
+              value: "00185370491"
+              severity: "blocking"
+
+    SearchByEnterpriseAndDateRangeRequest:
+      summary: Search calculation results by enterprise number and date range
+      value:
+        enterpriseNumbers: [ "0406798006" ]
+        from: "2026-09-01"
+        to: "2026-09-30"
+
+    SearchBySsinAndStatusRequest:
+      summary: Search calculation results by SSIN's and processing status and relationType
+      value:
+        ssins: [ "92110124387", "00185370491" ]
+        from: "2026-10-01"
+        to: "2026-12-31"
+        processingStatuses: [ "rejected" ]
+        relationTypes: [ 999 ]
+
+    SearchByMultipleIdsRequest:
+      summary: Search calculation results by specific ID's
+      value:
+        ids:
+          - "40de65a6-cb60-4624-a119-20a696359d76"
+          - "b64b054a-3113-40ec-87dc-7be3e09652b7"
+          - "b7e39578-abc4-4ea8-b142-c5b3224dcdaa"
+
+    SearchResultsMultipleItemsResponse:
+      summary: Search results with multiple calculation summaries
+      value:
+        total: 3
+        page: 1
+        pageSize: 10
+        items:
+          - href: "https://services.socialsecurity.be/REST/salaryData/v1/calculationResults/40de65a6-cb60-4624-a119-20a696359d76"
+            id: "40de65a6-cb60-4624-a119-20a696359d76"
+            startDate: "2026-09-01"
+            endDate: "2026-09-30"
+            calculationDate: "2026-09-26"
+            frequency: 3
+            relation:
+              declarantReference: "012345676"
+              type: 999
+            enterprise:
+              enterpriseNumber: "0406798006"
+            naturalPerson:
+              ssin: "92110124387"
+            processingStatus: "inProgress"
+            messageType: "creation"
+          - href: "https://services.socialsecurity.be/REST/salaryData/v1/calculationResults/b64b054a-3113-40ec-87dc-7be3e09652b7"
+            id: "b64b054a-3113-40ec-87dc-7be3e09652b7"
+            startDate: "2026-09-01"
+            endDate: "2026-09-30"
+            calculationDate: "2026-09-26"
+            frequency: 3
+            relation:
+              declarantReference: "012345676"
+              type: 999
+            enterprise:
+              enterpriseNumber: "0406798006"
+            naturalPerson:
+              ssin: "92110124387"
+            processingStatus: "validated"
+            messageType: "creation"
+          - href: "https://services.socialsecurity.be/REST/salaryData/v1/calculationResults/b7e39578-abc4-4ea8-b142-c5b3224dcdaa"
+            id: "b7e39578-abc4-4ea8-b142-c5b3224dcdaa"
+            startDate: "2026-09-01"
+            endDate: "2026-09-30"
+            calculationDate: "2026-09-26"
+            frequency: 3
+            relation:
+              declarantReference: "012345676"
+              type: 999
+            enterprise:
+              enterpriseNumber: "0406798006"
+            naturalPerson:
+              ssin: "00185370491"
+            processingStatus: "rejected"
+            messageType: "creation"
+
+    SearchResultsSingleItemResponse:
+      summary: Search results with single calculation summary
+      value:
+        total: 1
+        page: 1
+        pageSize: 10
+        items:
+          - href: "https://services.socialsecurity.be/REST/salaryData/v1/calculationResults/b64b054a-3113-40ec-87dc-7be3e09652b7"
+            id: "b64b054a-3113-40ec-87dc-7be3e09652b7"
+            startDate: "2026-09-01"
+            endDate: "2026-09-30"
+            calculationDate: "2026-09-26"
+            frequency: 3
+            relation:
+              declarantReference: "012345676"
+              type: 999
+            enterprise:
+              enterpriseNumber: "0406798006"
+            naturalPerson:
+              ssin: "92110124387"
+            processingStatus: "validated"
+            messageType: "creation"
+
+    SearchResultsEmptyResponse:
+      summary: Search results with no matches
+      value:
+        total: 0
+        page: 1
+        pageSize: 10
+        items: [ ]
+
+  parameters:
+    CalculationIdPathParameter:
+      name: calculationResultId
+      in: path
+      description: Universally Unique Identifier of a calculation result of salary data.
+      required: true
+      schema:
+        $ref: "../../belgif/common/v1/common-v1.yaml#/components/schemas/Uuid"
+
   schemas:
     Enterprise:
       type: object
+      description: Minimum one of the two data (nssoNumber (only definitive NSSO number) or enterpriseNumber) must be completed.
       properties:
         enterpriseNumber:
-          pattern: "^[0-1]\\d{9}$"
-          type: string
-          description: Identifier issued by CBE for a registered organization
+          $ref: "../../belgif/organization/identifier/v1/organization-identifier-v1.yaml#/components/schemas/EnterpriseNumber"
         nssoNumber:
-          maximum: 5999999999
-          minimum: 197
-          type: integer
-          description: "Definitive or provisional NSSO number, assigned to each registered\
-            \ employer or local or provincial administration."
-          format: int64
-      description: Minimum one of the two data (nssoNumber (only definitive NSSO number)
-        or enterpriseNumber) must be completed.
+          $ref: "../../belgif/employment/identifier/v1/employment-identifier-v1.yaml#/components/schemas/EmployerId"
       anyOf:
-        - required:
-            - nssoNumber
-        - required:
-            - enterpriseNumber
+        - required: [ nssoNumber ]
+        - required: [ enterpriseNumber ]
+
     NaturalPerson:
-      required:
-        - ssin
       type: object
       properties:
         ssin:
-          pattern: "^\\d{11}$"
-          type: string
-          description: Social Security Identification Number issued by the National
-            Register or CBSS
-    Relation:
+          $ref: "../../belgif/person/identifier/v1/person-identifier-v1.yaml#/components/schemas/Ssin"
       required:
-        - declarantReference
-        - type
+        - ssin
+
+    Relation:
       type: object
       properties:
         declarantReference:
-          maxLength: 64
-          type: string
-          description: relation declarant reference
+          $ref: "#/components/schemas/DeclarantReference"
         type:
           $ref: "#/components/schemas/RelationType"
-    Calculation:
       required:
-        - calculationDate
-        - endDate
-        - enterprise
-        - frequency
-        - id
-        - naturalPerson
-        - relation
-        - startDate
+        - declarantReference
+        - type
+
+    Calculation:
       type: object
+      x-parent: true
       properties:
         id:
-          pattern: "^[\\da-f]{8}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{12}$"
-          type: string
-          description: "Universally Unique Identifier, as standardized in RFC 4122\
-            \ and ISO/IEC 9834-8"
+          $ref: "../../belgif/common/v1/common-v1.yaml#/components/schemas/Uuid"
         startDate:
           type: string
           format: date
@@ -617,6 +1311,7 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/FiscalFeature"
+        # readOnly properties
         channel:
           type: string
           description: The channel through which the input was submitted.
@@ -627,16 +1322,25 @@ components:
             - batch
         receivedDate:
           type: string
-          description: The date and time at which the calculation was received.
           format: date-time
+          description: The date and time at which the calculation was received.
           readOnly: true
         validation:
           $ref: "#/components/schemas/CalculationValidation"
-    CalculationValidation:
       required:
-        - messageType
-        - processingStatus
+        - id
+        - startDate
+        - endDate
+        - calculationDate
+        - frequency
+        - relation
+        - enterprise
+        - naturalPerson
+
+    CalculationValidation:
       type: object
+      description: The processing status and issues of the input.
+      readOnly: true
       properties:
         processingStatus:
           $ref: "#/components/schemas/ProcessingStatus"
@@ -650,42 +1354,45 @@ components:
           type: array
           description: List of validation or processing issues detected in the input.
           items:
-            $ref: "#/components/schemas/SalaryDataInputValidationIssue"
-      description: The processing status and issues of the input.
-      readOnly: true
+            $ref: '#/components/schemas/SalaryDataInputValidationIssue'
+      required:
+        - processingStatus
+        - messageType
+
     ExternalReference:
+      type: string
       maxLength: 64
-      type: string
+
     EmployerClass:
-      maxLength: 5
-      minLength: 5
       type: string
+      pattern: '^\d{1,5}$'
+
     WorkerCode:
-      maxLength: 5
-      minLength: 5
       type: string
+      pattern: '^\d{1,5}$'
+
     ProcessingStatus:
       type: string
       description: The current processing status of the salary data input.
       enum:
-        - inProgress
-        - rejected
-        - validated
-        - deleted
+        - inProgress    # The input is currently being processed.
+        - rejected      # The input was rejected due to a blocking error.
+        - validated     # The processing of the input has been successfully completed and validated.
+        - deleted       # The input has been deleted, no further action can be made.
+
     SalaryDataInputValidationProblem:
       type: object
+      allOf:
+        - $ref: "../../belgif/problem/v1/problem-v1.yaml#/components/schemas/Problem"
       properties:
         issues:
           type: array
           items:
             $ref: "#/components/schemas/SalaryDataInputValidationIssue"
-      allOf:
-        - $ref: "#/components/schemas/Problem"
+
     SalaryDataInputValidationIssue:
-      required:
-        - severity
       allOf:
-        - $ref: "#/components/schemas/InputValidationIssue"
+        - $ref: "../../belgif/problem/v1/problem-v1.yaml#/components/schemas/InputValidationIssue"
         - type: object
           properties:
             externalReference:
@@ -697,52 +1404,53 @@ components:
                 - blocking
                 - notBlocking
                 - informative
+      required:
+        - severity
+
     MessageType:
       type: string
-      description: "Type of message submitted for the calculation results of salary\
-        \ data. 'creation' for a new submitted calculation results of salary data,\
-        \ 'update' for a modification of a submitted calculation results, 'cancel'\
-        \ for deletion of a submitted calculation results."
+      description: Type of message submitted for the calculation results of salary data.
+        'creation' for a new submitted calculation results of salary data,
+        'update' for a modification of a submitted calculation results,
+        'cancel' for deletion of a submitted calculation results.
       enum:
         - creation
         - update
         - cancel
+
     DeclarantReference:
-      maxLength: 64
       type: string
+      maxLength: 64
       description: relation declarant reference
+
     CalculationFrequency:
       type: integer
       enum:
-        - 1
-        - 2
-        - 3
-        - 4
-        - 5
-        - 6
-        - 99
+        - 1 # Weekly
+        - 2 # Bi-monthly
+        - 3 # Monthly
+        - 4 # Quarterly
+        - 5 # Semi-annual
+        - 6 # Annual
+        - 99 # Other frequency
+
     RelationType:
       type: integer
       enum:
-        - 1
-        - 2
-        - 3
-        - 4
-        - 999
+        - 1 # Employment contract
+        - 2 # Statutory
+        - 3 # Apprenticeship contract
+        - 4 # Former worker
+        - 999 # Other
+
     Service:
-      required:
-        - numberOfHours
-        - startDate
-        - type
       type: object
       properties:
         externalReference:
-          maxLength: 64
+          $ref: "#/components/schemas/ExternalReference"
+        type: # Service code
           type: string
-        type:
-          maxLength: 7
-          minLength: 7
-          type: string
+          pattern: '^\d{7}$'
         startDate:
           type: string
           format: date
@@ -750,60 +1458,58 @@ components:
           type: string
           format: date
         numberOfHours:
-          maximum: 9999999
-          minimum: 0
           type: integer
+          minimum: 0
+          maximum: 9999999
         serviceFeatures:
           $ref: "#/components/schemas/ServiceFeature"
         usingEmployer:
           $ref: "#/components/schemas/UsingEmployer"
+      required:
+        - type
+        - startDate
+        - numberOfHours
+
     ServiceFeature:
       type: object
       properties:
         externalReference:
-          maxLength: 64
-          type: string
+          $ref: "#/components/schemas/ExternalReference"
         overtimeType:
           type: integer
           enum:
-            - 1
-            - 2
+            - 1 # Recoverable overtime hours
+            - 2 # Non-recoverable overtime hours
         subjectionToSocialSecurityContribution:
           type: integer
           enum:
-            - 1
-            - 2
+            - 1 # Exempt from social security contributions
+            - 2 # Subject to social security contributions
         overtimeIncludedInCalendar:
           type: integer
           enum:
-            - 1
-            - 2
+            - 1 # Periodic-based benefits are not included in daily-based benefits
+            - 2 # The periodic-based benefits in question are included in daily-based benefits
         seafarerServiceType:
           type: integer
           enum:
-            - 1
-            - 2
-            - 3
+            - 1 # Navigation
+            - 2 # Stand-by
+            - 3 # Additional work
         legalVacationOrigin:
           type: integer
           enum:
-            - 1
+            - 1 # granted on the basis of a holiday certificate
         nonAssimilationLegalVacationRights:
           type: integer
           enum:
-            - 1
+            - 1 # not treated as equivalent to normal performance when determining the number of hours of statutory leave to which a person is entitled
+
     IdentifyingSocialFeature:
-      required:
-        - employerClass
-        - endDate
-        - operationalSocialFeatures
-        - startDate
-        - workerCode
       type: object
       properties:
         externalReference:
-          maxLength: 64
-          type: string
+          $ref: "#/components/schemas/ExternalReference"
         startDate:
           type: string
           format: date
@@ -811,21 +1517,14 @@ components:
           type: string
           format: date
         employmentStatus:
-          maxLength: 5
-          minLength: 5
-          type: string
+          $ref: "#/components/schemas/EmploymentStatus"
         employerClass:
-          maxLength: 5
-          minLength: 5
-          type: string
+          $ref: "#/components/schemas/EmployerClass"
         workerCode:
-          maxLength: 5
-          minLength: 5
-          type: string
+          $ref: "#/components/schemas/WorkerCode"
         flatRateCode:
-          maximum: 99999
-          minimum: 0
-          type: integer
+          type: string
+          pattern: '^\d{1,5}$'
         operationalSocialFeatures:
           type: array
           items:
@@ -836,23 +1535,23 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/FinancialElement"
-    EmploymentStatus:
-      maxLength: 5
-      minLength: 5
-      type: string
-    OperationalSocialFeature:
       required:
-        - contractType
-        - endDate
-        - establishmentUnitNumber
-        - jointCommissionNumber
         - startDate
-        - weeklyHours
+        - endDate
+        - operationalSocialFeatures
+        - employerClass
+        - workerCode
+
+    EmploymentStatus:
+      type: string
+      minLength: 5
+      maxLength: 5
+
+    OperationalSocialFeature:
       type: object
       properties:
         externalReference:
-          maxLength: 64
-          type: string
+          $ref: "#/components/schemas/ExternalReference"
         startDate:
           type: string
           format: date
@@ -862,29 +1561,21 @@ components:
         contractType:
           type: integer
           enum:
-            - 1
-            - 2
+            - 1 # Full time
+            - 2 # Part time
         establishmentUnitNumber:
-          pattern: "^[2-8]\\d{9}$"
-          type: string
-          description: Identifier issued by CBE for a site (establishment) of an organization
+          $ref: "../../belgif/organization/identifier/v1/organization-identifier-v1.yaml#/components/schemas/EstablishmentUnitNumber"
         jointCommissionNumber:
-          pattern: "^\\d{3}(\\.\\d{2}){0,2}$"
           type: string
+          pattern: '^\d{3}(\.\d{2}){0,2}$'
         economicActivity:
-          pattern: "^\\d{5}$"
-          type: string
-          description: |
-            Belgian NACE activity code of 5 digits, as used for NSSO and for VAT purposes (version 2025).
-
-            The meaning of the first four digits are standard across all countries, defined by NACE Revision 2_1.
-            The last digit is defined in the Belgian NACE 2025 list.
+          $ref: "../../belgif/organization/v2/organization-v2.yaml#/components/schemas/NaceBel2025Length5Code"
         educationSectorPaymentMethod:
           type: integer
           enum:
-            - 10
-            - 12
-            - 20
+            - 10 # payment in tenths
+            - 12 # payment in twelfths
+            - 20 # Reformed school year in French-speaking education
         operationalSocialFeaturesDetail:
           $ref: "#/components/schemas/OperationalSocialFeaturesDetail"
         weeklyHours:
@@ -895,85 +1586,91 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/FinancialElement"
-    WeeklyHour:
       required:
-        - annualAverageWeeklyPaidWorkingHours
-        - effectiveAverageWeeklyWorkingHours
+        - startDate
+        - endDate
+        - contractType
+        - establishmentUnitNumber
+        - jointCommissionNumber
+        - weeklyHours
+
+    WeeklyHour:
       type: object
       properties:
         externalReference:
-          maxLength: 64
-          type: string
+          $ref: "#/components/schemas/ExternalReference"
         type:
           type: string
           enum:
-            - s
-            - q
-            - m
+            - s # Data of the reference person of application for the worker in question
+            - q # Data of the physical person without taking into account any possible suspension of work
+            - m # Data of the physical person taking into account any full or partial suspension of work
         effectiveAverageWeeklyWorkingHours:
-          maximum: 16800
-          minimum: 0
           type: integer
+          minimum: 0
+          maximum: 16800
         annualAverageWeeklyPaidWorkingHours:
-          maximum: 16800
-          minimum: 0
           type: integer
+          minimum: 0
+          maximum: 16800
         reorganisationMeasures:
           type: array
           items:
             $ref: "#/components/schemas/ReorganisationMeasure"
+      required:
+        - effectiveAverageWeeklyWorkingHours
+        - annualAverageWeeklyPaidWorkingHours
+
     ReorganisationMeasure:
-      required:
-        - percentage
-        - type
       type: object
       properties:
         externalReference:
-          maxLength: 64
-          type: string
+          $ref: "#/components/schemas/ExternalReference"
         type:
-          maximum: 999
-          minimum: 0
-          type: integer
+          type: string
+          pattern: '^\d{1,3}$'
         percentage:
-          maximum: 10000
-          minimum: 1
           type: integer
-    AdditionalSocialFeaturesDetail:
+          minimum: 1
+          maximum: 10000
       required:
-        - endDate
-        - startDate
+        - type
+        - percentage
+
+    AdditionalSocialFeaturesDetail:
       type: object
       properties:
         externalReference:
-          maxLength: 64
-          type: string
+          $ref: "#/components/schemas/ExternalReference"
         startDate:
           type: string
           format: date
         endDate:
           type: string
           format: date
-      x-parent: true
+      required:
+        - startDate
+        - endDate
+
     OperationalSocialFeaturesDetail:
       type: object
       properties:
         gradualWorkResumption:
           $ref: "#/components/schemas/GradualWorkResumption"
+
     GradualWorkResumption:
       allOf:
         - $ref: "#/components/schemas/AdditionalSocialFeaturesDetail"
-        - required:
-            - weeklyMaxNumberOfHoursAllowed
-          type: object
+        - type: object
           properties:
             weeklyMaxNumberOfHoursAllowed:
-              maximum: 99999
-              minimum: 1
               type: integer
+              minimum: 1
+              maximum: 99999
+          required:
+            - weeklyMaxNumberOfHoursAllowed
+
     IdentifyingSocialFeaturesDetail:
-      required:
-        - jobs
       type: object
       properties:
         jobs:
@@ -986,87 +1683,85 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/StarterJob"
+      required:
+        - jobs
     Job:
       allOf:
         - $ref: "#/components/schemas/AdditionalSocialFeaturesDetail"
         - type: object
           properties:
             title:
-              maxLength: 100
               type: string
-            professionalClassificationSectoralCla:
               maxLength: 100
+            professionalClassificationSectoralCla: # Cla = collective labour agreement
               type: string
+              maxLength: 100
             professionalClassificationEnterprise:
-              maxLength: 100
               type: string
+              maxLength: 100
+
     Dismissal:
       allOf:
         - $ref: "#/components/schemas/AdditionalSocialFeaturesDetail"
-        - required:
-            - noticePeriodStartDate
-          type: object
+        - type: object
           properties:
             noticePeriodStartDate:
               type: string
               format: date
             noticePeriodMonths:
-              maximum: 99999
-              minimum: 1
               type: integer
+              minimum: 1
+              maximum: 99999
             noticePeriodWeeks:
-              maximum: 99999
-              minimum: 1
               type: integer
+              minimum: 1
+              maximum: 99999
             noticePeriodDays:
-              maximum: 99999
-              minimum: 1
               type: integer
+              minimum: 1
+              maximum: 99999
+          required:
+            - noticePeriodStartDate
+
     StarterJob:
       allOf:
         - $ref: "#/components/schemas/AdditionalSocialFeaturesDetail"
-        - required:
-            - type
-          type: object
+        - type: object
           properties:
             type:
               type: integer
               enum:
-                - 1
-                - 2
-                - 3
-                - 4
-                - 5
-                - 6
-                - 7
-                - 8
-                - 9
+                - 1 # Worker under a first employment agreement type 1 (standard employment contract, nothing more)
+                - 2 # Worker under a first employment agreement type 2 (combination with a part-time employment contract)
+                - 3 # Worker under a first employment agreement type 3 (apprenticeship, internship, or integration agreement)
+                - 4 # Worker with a disability under a first employment agreement type 1 (standard employment contract, nothing more)
+                - 5 # Worker with a disability under a first employment agreement type 2 (combination with a part-time employment contract)
+                - 6 # Worker with a disability under a first employment agreement type 3 (apprenticeship, internship, or integration agreement)
+                - 7 # Worker of foreign origin under a first employment agreement type 1 (standard employment contract, nothing more)
+                - 8 # Worker of foreign origin under a first employment agreement type 2 (combination with a part-time employment contract)
+                - 9 # Worker of foreign origin under a first employment agreement type 3 (apprenticeship, internship, or integration agreement)
             remunerationPercentageForStarterTraining:
-              maximum: 1000
-              minimum: 1
               type: integer
+              minimum: 1
+              maximum: 1000
+          required:
+            - type
+
     FinancialElement:
-      required:
-        - amount
-        - code
-        - roles
       type: object
       properties:
         externalReference:
-          maxLength: 64
-          type: string
+          $ref: "#/components/schemas/ExternalReference"
         code:
-          maxLength: 7
-          minLength: 7
           type: string
+          pattern: '^\d{1,7}$'
         amount:
-          type: integer
-          description: "Money amount in Euro cents, also allows negative amounts."
+          $ref: "../../belgif/money/v1/money-v1.yaml#/components/schemas/EuroCentAmount"
         roles:
-          maxItems: 2
           type: array
           items:
             $ref: "#/components/schemas/FinancialElementRole"
+          maxItems: 2
         bonusFeatures:
           $ref: "#/components/schemas/BonusFeature"
         voucherFeatures:
@@ -1083,57 +1778,57 @@ components:
           $ref: "#/components/schemas/PaidRightBalanceFeature"
         vacationPayFeatures:
           $ref: "#/components/schemas/VacationPayFeature"
+      required:
+        - code
+        - amount
+        - roles
+
     FinancialElementRole:
       type: integer
       enum:
-        - 1
-        - 2
-        - 3
-        - 4
-        - 5
-        - 6
-        - 7
-        - 8
-        - 9
-        - 10
-        - 11
+        - 1 # Amount that effectively forms part of the gross amount subject to social security contributions
+        - 2 # Amount that fictitiously forms part of the gross amount subject to social security contributions
+        - 3 # Employee social security contribution
+        - 4 # Reduction of an employee social security contribution
+        - 5 # Positive movement on the gross taxable amount
+        - 6 # Negative movement on the gross taxable amount
+        - 7 # Tax withholding
+        - 8 # Reduction of a tax withholding
+        - 9 # Positive movement on the net amount
+        - 10 # Negative movement on the net amount
+        - 11 # Communication/Reference
+
     BonusFeature:
       type: object
       properties:
         externalReference:
-          maxLength: 64
-          type: string
+          $ref: "#/components/schemas/ExternalReference"
         allocationFrequency:
-          maximum: 99
-          minimum: 0
           type: integer
+          minimum: 0
+          maximum: 99
+
     VoucherFeature:
-      required:
-        - amountPerUnit
-        - numberOfUnits
       type: object
       properties:
         externalReference:
-          maxLength: 64
-          type: string
+          $ref: "#/components/schemas/ExternalReference"
         numberOfUnits:
-          maximum: 999999999999999
-          minimum: 1
           type: integer
           format: int64
+          minimum: 1
+          maximum: 999999999999999
         amountPerUnit:
-          minimum: 0
-          type: integer
-          description: Money amount in Euro cents >= 0
-    SeverancePayFeature:
+          $ref: "../../belgif/money/v1/money-v1.yaml#/components/schemas/EuroCentPositiveAmount"
       required:
-        - endDate
-        - startDate
+        - numberOfUnits
+        - amountPerUnit
+
+    SeverancePayFeature:
       type: object
       properties:
         externalReference:
-          maxLength: 64
-          type: string
+          $ref: "#/components/schemas/ExternalReference"
         startDate:
           type: string
           format: date
@@ -1141,39 +1836,29 @@ components:
           type: string
           format: date
         numberOfDaysReductionByOutplacement:
-          maximum: 28
-          minimum: 1
           type: integer
-    HolidayAfterSeveranceFeature:
+          minimum: 1
+          maximum: 28
       required:
-        - date
+        - startDate
+        - endDate
+
+    HolidayAfterSeveranceFeature:
       type: object
       properties:
         externalReference:
-          maxLength: 64
-          type: string
+          $ref: "#/components/schemas/ExternalReference"
         date:
           type: string
           format: date
-    FiscalFeature:
       required:
-        - belgianResident
-        - civilStatusType
-        - crossBorderWorker
-        - disabilityIndicator
-        - endDate
-        - numberOfDependentChildren
-        - numberOfDependentDisabledChildren
-        - numberOfDependents
-        - numberOfDependentsNeedingCare
-        - numberOfDisabledDependents
-        - retired
-        - startDate
+        - date
+
+    FiscalFeature:
       type: object
       properties:
         externalReference:
-          maxLength: 64
-          type: string
+          $ref: "#/components/schemas/ExternalReference"
         startDate:
           type: string
           format: date
@@ -1181,121 +1866,132 @@ components:
           type: string
           format: date
         employmentStatus:
-          maxLength: 5
-          minLength: 5
-          type: string
+          $ref: "#/components/schemas/EmploymentStatus"
         civilStatusType:
+          #$ref: "../../belgif/person/v2/person-v2.yaml#/components/schemas/CivilStatusTypeCode"
           type: integer
           enum:
-            - 1
-            - 2
-            - 3
-            - 4
-            - 5
-            - 6
+            - 1 # Single
+            - 2 # Married
+            - 3 # Divorced
+            - 4 # Legally separated
+            - 5 # Widow or widower
+            - 6 # Legal cohabitant
         numberOfDependentChildren:
-          maximum: 99
-          minimum: 0
           type: integer
+          minimum: 0
+          maximum: 99
         numberOfDependentDisabledChildren:
-          maximum: 99
-          minimum: 0
           type: integer
+          minimum: 0
+          maximum: 99
         numberOfDependents:
-          maximum: 99
-          minimum: 0
           type: integer
+          minimum: 0
+          maximum: 99
         numberOfDisabledDependents:
-          maximum: 99
-          minimum: 0
           type: integer
+          minimum: 0
+          maximum: 99
         disabilityIndicator:
           type: integer
           enum:
-            - 1
-            - 2
+            - 1 # The person is not considered fiscally as a person with a disability
+            - 2 # The person is considered fiscally as a person with a disability
         crossBorderWorker:
           type: integer
           enum:
-            - 1
-            - 2
+            - 1 # Not a cross-border worker
+            - 2 # Cross-border worker
         belgianResident:
           type: integer
           enum:
-            - 1
-            - 2
+            - 1 # The individual is not considered a Belgian resident for tax purposes
+            - 2 # The individual is considered a Belgian resident for tax purposes
         incomeOfPartner:
           type: integer
           enum:
-            - 1
-            - 2
-            - 3
-            - 4
-            - 5
+            - 1 # The partner has no personal professional income
+            - 2 # The partner has personal professional income not declared under another code.
+            - 3 # The partner has personal professional income consisting exclusively of pensions, annuities, or similar income, with a net monthly amount not exceeding 170 €
+            - 4 # The partner has personal professional income consisting exclusively of pensions, annuities, or similar income, with a net monthly amount not exceeding 563 €
+            - 5 # The partner has personal professional income other than pensions, annuities, or similar income, with a net monthly amount not exceeding 283 €
         disabilityOfPartner:
           type: integer
           enum:
-            - 1
-            - 2
+            - 1 # The partner is not considered fiscally as a person with a disability
+            - 2 # The partner is considered fiscally as a person with a disability
         numberOfDependentsNeedingCare:
-          maximum: 99
-          minimum: 0
           type: integer
+          minimum: 0
+          maximum: 99
         retired:
           type: integer
           enum:
-            - 1
-            - 2
+            - 1 # Retired
+            - 2 # Not retired or this information is unknown to the sender
         financialElements:
           type: array
           items:
             $ref: "#/components/schemas/FinancialElement"
+      required:
+        - startDate
+        - endDate
+        - civilStatusType
+        - numberOfDependentChildren
+        - numberOfDependentDisabledChildren
+        - numberOfDependents
+        - numberOfDisabledDependents
+        - disabilityIndicator
+        - crossBorderWorker
+        - belgianResident
+        - numberOfDependentsNeedingCare
+        - retired
+
     PaidRightBalanceFeature:
+      type: object
+      properties:
+        externalReference:
+          $ref: "#/components/schemas/ExternalReference"
+        numberOfPaidHours:
+          type: integer
+          minimum: 1
+          maximum: 99999
+        serviceType:
+          type: string
+          pattern: '^\d{1,7}$'
       required:
         - numberOfPaidHours
         - serviceType
+
+    VacationPayFeature:
       type: object
       properties:
         externalReference:
-          maxLength: 64
-          type: string
-        numberOfPaidHours:
-          maximum: 99999
-          minimum: 1
+          $ref: "#/components/schemas/ExternalReference"
+        vacationHoursBalance:
           type: integer
-        serviceType:
-          maximum: 9999999
-          minimum: 1
+          minimum: 0
+          maximum: 67200
+        initialVacationHours:
           type: integer
-    VacationPayFeature:
+          minimum: 0
+          maximum: 67200
       required:
         - vacationHoursBalance
-      type: object
-      properties:
-        externalReference:
-          maxLength: 64
-          type: string
-        vacationHoursBalance:
-          maximum: 67200
-          minimum: 0
-          type: integer
-        initialVacationHours:
-          maximum: 67200
-          minimum: 0
-          type: integer
+
     UsingEmployer:
-      required:
-        - enterpriseNumber
       type: object
       properties:
         enterpriseNumber:
-          pattern: "^[0-1]\\d{9}$"
-          type: string
-          description: Identifier issued by CBE for a registered organization
+          $ref: "../../belgif/organization/identifier/v1/organization-identifier-v1.yaml#/components/schemas/EnterpriseNumber"
         externalReference:
-          maxLength: 64
-          type: string
+          $ref: "#/components/schemas/ExternalReference"
+      required:
+        - enterpriseNumber
+
     PageLinks:
+      description: Object containing links of paginated collection of resources
       type: object
       properties:
         prev:
@@ -1315,94 +2011,91 @@ components:
         total:
           type: integer
           description: Total number of items found
-      description: Object containing links of paginated collection of resources
+
     CalculationResultSearchRequest:
       type: object
+      x-parent: true
+      description: Request object containing criteria for searching calculation result summaries of salary data.
       properties:
         ids:
-          maxItems: 50
+          description: A list of id's you want to search for. If provided, 'from' and 'to' dates are not required.
           type: array
-          description: A list of id's you want to search for.
+          maxItems: 50
           items:
-            $ref: "#/components/schemas/Uuid"
+            $ref: "../../belgif/common/v1/common-v1.yaml#/components/schemas/Uuid"
         enterpriseNumbers:
-          maxItems: 10
-          type: array
           description: A list of enterpriseNumber's you want to search for.
+          type: array
+          maxItems: 10
           items:
-            $ref: "#/components/schemas/EnterpriseNumber"
+            $ref: "../../belgif/organization/identifier/v1/organization-identifier-v1.yaml#/components/schemas/EnterpriseNumber"
         nssoNumbers:
-          maxItems: 10
-          type: array
           description: A list of nssoNumber's you want to search for.
-          items:
-            $ref: "#/components/schemas/EmployerId"
-        ssins:
-          maxItems: 50
           type: array
-          description: A list of ssin's you want to search for.
-          items:
-            $ref: "#/components/schemas/Ssin"
-        declarantReferences:
           maxItems: 10
+          items:
+            $ref: "../../belgif/employment/identifier/v1/employment-identifier-v1.yaml#/components/schemas/EmployerId"
+        ssins:
+          description: A list of ssin's you want to search for.
           type: array
+          maxItems: 50
+          items:
+            $ref: "../../belgif/person/identifier/v1/person-identifier-v1.yaml#/components/schemas/Ssin"
+        declarantReferences:
           description: A list of Declarant references you want to search for.
+          type: array
+          maxItems: 10
           items:
             $ref: "#/components/schemas/DeclarantReference"
         relationTypes:
-          maxItems: 5
-          type: array
           description: A list of relation types you want to search for.
+          type: array
+          maxItems: 5
           items:
             $ref: "#/components/schemas/RelationType"
         from:
           type: string
           format: date
+          description: The start date (inclusive) of the search window. Required if searching without 'ids'. A CalculationResult is returned if any part of its duration overlaps with this search period.
         to:
           type: string
           format: date
+          description: The end date (inclusive) of the search window. Required if searching without 'ids'. The total range between 'from' and 'to' cannot exceed 3 calendar months.
         processingStatuses:
+          description: A list of the current processing status of the salary data input.
           type: array
-          description: A list of the current processing status of the salary data
-            input.
-          example:
-            - validated
-            - inProgress
           items:
             $ref: "#/components/schemas/ProcessingStatus"
-      description: Request object containing criteria for searching calculation result
-        summaries of salary data.
+          example: [ "validated","inProgress" ]
+        lastValidatedOnly:
+          description: If true, the search returns only the last validated situation of a calculation result for each calculation result found.
+          type: boolean
+          default: false
+
     CalculationResultsCollection:
-      required:
-        - items
-        - total
       type: object
+      description: List of calculation results summaries
+      allOf:
+        - $ref: '#/components/schemas/PageLinks'
       properties:
         items:
           type: array
           items:
-            $ref: "#/components/schemas/CalculationResultSummary"
-      description: List of calculation results summaries
-      allOf:
-        - $ref: "#/components/schemas/PageLinks"
-    CalculationResultSummary:
+            $ref: '#/components/schemas/CalculationResultSummary'
       required:
-        - href
-        - id
-        - messageType
-        - processingStatus
+        - total
+        - items
+
+    CalculationResultSummary:
       type: object
+      x-parent: true
       properties:
         href:
           type: string
-          description: URL to retrieve the full calculation resource (Return last
-            situation of calculation results of salary data for a given id.)
           format: uri
+          description: URL to retrieve the full calculation resource (Return last situation of calculation results of salary data for a given id.)
         id:
-          pattern: "^[\\da-f]{8}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{12}$"
-          type: string
-          description: "Universally Unique Identifier, as standardized in RFC 4122\
-            \ and ISO/IEC 9834-8"
+          $ref: "../../belgif/common/v1/common-v1.yaml#/components/schemas/Uuid"
         startDate:
           type: string
           format: date
@@ -1415,36 +2108,34 @@ components:
         frequency:
           $ref: "#/components/schemas/CalculationFrequency"
         relation:
-          $ref: "#/components/schemas/Relation"
+          $ref: '#/components/schemas/Relation'
         enterprise:
-          $ref: "#/components/schemas/Enterprise"
+          $ref: '#/components/schemas/Enterprise'
         naturalPerson:
-          $ref: "#/components/schemas/NaturalPerson"
+          $ref: '#/components/schemas/NaturalPerson'
         processingStatus:
           $ref: "#/components/schemas/ProcessingStatus"
         messageType:
           $ref: "#/components/schemas/MessageType"
-    CancelCalculation:
       required:
-        - declarantReference
-        - enterprise
+        - href
         - id
-        - naturalPerson
+        - processingStatus
+        - messageType
+
+    CancelCalculation:
       type: object
+      x-parent: true
       properties:
         id:
-          pattern: "^[\\da-f]{8}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{12}$"
-          type: string
-          description: "Universally Unique Identifier, as standardized in RFC 4122\
-            \ and ISO/IEC 9834-8"
+          $ref: "../../belgif/common/v1/common-v1.yaml#/components/schemas/Uuid"
         enterprise:
           $ref: "#/components/schemas/Enterprise"
         naturalPerson:
           $ref: "#/components/schemas/NaturalPerson"
         declarantReference:
-          maxLength: 64
-          type: string
-          description: relation declarant reference
+          $ref: "#/components/schemas/DeclarantReference"
+        # readOnly properties
         channel:
           type: string
           description: The channel through which the input was submitted.
@@ -1455,205 +2146,13 @@ components:
             - batch
         receivedDate:
           type: string
-          description: The date and time at which the calculation was received.
           format: date-time
+          description: The date and time at which the calculation was received.
           readOnly: true
         validation:
           $ref: "#/components/schemas/CalculationValidation"
-    Problem:
-      type: object
-      properties:
-        type:
-          type: string
-          description: An absolute URI that identifies the problem type
-          format: uri
-          default: about:blank
-        href:
-          type: string
-          description: "An absolute URI that, when dereferenced, provides human-readable\
-            \ documentation for the problem type (e.g. using HTML)."
-          format: uri
-        title:
-          type: string
-          description: A short summary of the problem type. Written in English and
-            readable for engineers (usually not suited for non technical stakeholders
-            and not localized).
-          example: Service Unavailable
-        status:
-          maximum: 600
-          exclusiveMaximum: true
-          minimum: 400
-          type: integer
-          description: The HTTP status code generated by the origin server for this
-            occurrence of the problem.
-          format: int32
-          example: 503
-        detail:
-          type: string
-          description: A human-readable explanation specific to this occurrence of
-            the problem
-        instance:
-          type: string
-          description: An absolute URI that identifies the specific occurrence of
-            the problem. It may or may not yield further information if dereferenced.
-          format: uri
-      description: "A Problem Details object (RFC 9457).\n\nAdditional properties\
-        \ specific to the problem type may be present.    \n"
-      example:
-        type: urn:problem-type:exampleOrganization:exampleProblem
-        href: https://www.belgif.be/specification/rest/api-guide/#standardized-problem-types
-        title: Description of the type of problem that occurred
-        status: 400
-        detail: Description of specific occurrence of the problem
-        instance: urn:uuid:123e4567-e89b-12d3-a456-426614174000
-    InputValidationProblem:
-      type: object
-      properties:
-        issues:
-          type: array
-          items:
-            $ref: "#/components/schemas/InputValidationIssue"
-      example:
-        type: urn:problem-type:belgif:badRequest
-        href: https://www.belgif.be/specification/rest/api-guide/problems/badRequest.html
-        title: Bad Request
-        status: 400
-        detail: The input message is incorrect
-        instance: urn:uuid:123456-1234-1235-4567489798
-        issues:
-          - type: urn:problem-type:belgif:input-validation:schemaViolation
-            detail: exampleNumericProperty with value xyz should be numeric
-            in: path
-            name: exampleNumericProperty
-            value: abc
-          - type: urn:problem-type:belgif:input-validation:schemaViolation
-            title: Input isn't valid with respect to schema
-            detail: "examplePropertyWithPattern a2345678901 doesn't match pattern '^\\\
-            d{11}$'"
-            in: body
-            name: "items[0].examplePropertyWithPattern"
-            value: a2345678901
-      allOf:
-        - $ref: "#/components/schemas/Problem"
-    InputValidationIssue:
-      type: object
-      properties:
-        in:
-          type: string
-          description: The location of the invalid input
-          enum:
-            - body
-            - header
-            - path
-            - query
-        name:
-          type: string
-          description: The name of the invalid input
-        value:
-          description: The value of the erroneous input
-      description: |
-        An issue detected during input validation.
-
-        `status` is usually not present.
-        `href`, if present, refers to documentation of the issue type.
-        Additional properties specific to the issue type may be present.
-      allOf:
-        - $ref: "#/components/schemas/Problem"
-      x-parent: true
-    Uuid:
-      pattern: "^[\\da-f]{8}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{12}$"
-      type: string
-      description: "Universally Unique Identifier, as standardized in RFC 4122 and\
-        \ ISO/IEC 9834-8"
-    EnterpriseNumber:
-      pattern: "^[0-1]\\d{9}$"
-      type: string
-      description: Identifier issued by CBE for a registered organization
-    EmployerId:
-      maximum: 5999999999
-      minimum: 197
-      type: integer
-      description: "Definitive or provisional NSSO number, assigned to each registered\
-        \ employer or local or provincial administration."
-      format: int64
-    Ssin:
-      pattern: "^\\d{11}$"
-      type: string
-      description: Social Security Identification Number issued by the National Register
-        or CBSS
-    HealthStatus:
       required:
-        - status
-      type: object
-      properties:
-        status:
-          type: string
-          description: "Level indicating the health status of the service: UP (functioning\
-            \ as expected), DOWN (suffering unexpected failures), DEGRADED (partly\
-            \ unavailable but service can be continued with reduced functionality),\
-            \ or a custom status value"
-      description: Response message for the API health
-    EstablishmentUnitNumber:
-      pattern: "^[2-8]\\d{9}$"
-      type: string
-      description: Identifier issued by CBE for a site (establishment) of an organization
-    NaceBel2025Length5Code:
-      pattern: "^\\d{5}$"
-      type: string
-      description: |
-        Belgian NACE activity code of 5 digits, as used for NSSO and for VAT purposes (version 2025).
-
-        The meaning of the first four digits are standard across all countries, defined by NACE Revision 2_1.
-        The last digit is defined in the Belgian NACE 2025 list.
-    EuroCentAmount:
-      type: integer
-      description: "Money amount in Euro cents, also allows negative amounts."
-    EuroCentPositiveAmount:
-      minimum: 0
-      type: integer
-      description: Money amount in Euro cents >= 0
-  responses:
-    ProblemResponse:
-      description: a problem
-      content:
-        application/problem+json:
-          schema:
-            $ref: "#/components/schemas/Problem"
-  parameters:
-    CalculationIdPathParameter:
-      name: calculationResultId
-      in: path
-      description: Universally Unique Identifier of a calculation result of salary
-        data.
-      required: true
-      style: simple
-      explode: false
-      schema:
-        $ref: "#/components/schemas/Uuid"
-  securitySchemes:
-    Oauth:
-      type: oauth2
-      flows:
-        clientCredentials:
-          tokenUrl: https://services.socialsecurity.be/REST/oauth/v5/token
-          scopes:
-            scope:rsz-onss:management:ltds:input-rest:ltds: LTDS - Scope to be used
-              by Employer/ServiceProvider/Representative(SocialSecretariat).
-            scope:rsz-onss:management:ltds:input-rest:monitoring: LTDS - Scope to
-              be used by monitoring.
-        authorizationCode:
-          authorizationUrl: https://oauth-v5.socialsecurity.be/oauth2/authorize
-          tokenUrl: https://services.socialsecurity.be/REST/oauth/v5/token
-          scopes:
-            scope:rsz-onss:management:ltds:input-rest:employer: LTDS - Scope to be
-              used by employers.
-            scope:rsz-onss:management:ltds:input-rest:representative: LTDS - Scope
-              to be used by representatives.
-            scope:rsz-onss:management:ltds:input-rest:provider: LTDS - Scope to be
-              used by service provider.
-            scope:rsz-onss:management:ltds:input-rest:professional: LTDS - Scope to
-              be used by professionals.
-            scope:rsz-onss:management:ltds:input-rest:support: LTDS - Scope to be
-              used by GATB.
-            scope:rsz-onss:management:ltds:input-rest:monitoring: LTDS - Scope to
-              be used by monitoring.
+        - id
+        - enterprise
+        - naturalPerson
+        - declarantReference
