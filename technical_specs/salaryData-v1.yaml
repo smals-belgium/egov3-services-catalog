@@ -5,7 +5,7 @@ info:
   contact:
     name: LTDS team
     email: LTDS@smals.be
-  version: 1.0.3
+  version: 1.0.4
 servers:
 - url: https://services.socialsecurity.be/REST/salaryData/v1
 tags:
@@ -82,10 +82,6 @@ paths:
         - scope:rsz-onss:management:ltds:input-rest:provider
         - scope:rsz-onss:management:ltds:input-rest:professional
       x-oauth2-required-scopes: any
-      x-content-type: application/json
-      x-accepts: []
-      x-tags:
-      - tag: Calculation Results
   /calculationResults/search:
     post:
       tags:
@@ -188,11 +184,6 @@ paths:
         - scope:rsz-onss:management:ltds:input-rest:professional
         - scope:rsz-onss:management:ltds:input-rest:support
       x-oauth2-required-scopes: any
-      x-content-type: application/json
-      x-accepts:
-      - application/json
-      x-tags:
-      - tag: Calculation Results
   /calculationResults/{calculationResultId}:
     get:
       tags:
@@ -265,10 +256,6 @@ paths:
         - scope:rsz-onss:management:ltds:input-rest:professional
         - scope:rsz-onss:management:ltds:input-rest:support
       x-oauth2-required-scopes: any
-      x-accepts:
-      - application/json
-      x-tags:
-      - tag: Calculation Results
     put:
       tags:
       - Calculation Results
@@ -349,10 +336,6 @@ paths:
         - scope:rsz-onss:management:ltds:input-rest:provider
         - scope:rsz-onss:management:ltds:input-rest:professional
       x-oauth2-required-scopes: any
-      x-content-type: application/json
-      x-accepts: []
-      x-tags:
-      - tag: Calculation Results
     delete:
       tags:
       - Calculation Results
@@ -449,9 +432,6 @@ paths:
         - scope:rsz-onss:management:ltds:input-rest:provider
         - scope:rsz-onss:management:ltds:input-rest:professional
       x-oauth2-required-scopes: any
-      x-accepts: []
-      x-tags:
-      - tag: Calculation Results
   /calculationResults/{calculationResultId}/lastValidated:
     get:
       tags:
@@ -522,10 +502,6 @@ paths:
         - scope:rsz-onss:management:ltds:input-rest:professional
         - scope:rsz-onss:management:ltds:input-rest:support
       x-oauth2-required-scopes: any
-      x-accepts:
-      - application/json
-      x-tags:
-      - tag: Calculation Results
   /health:
     get:
       tags:
@@ -559,11 +535,7 @@ paths:
                   value:
                     status: DOWN
         "500":
-          description: a problem
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/Problem"
+          $ref: "#/components/responses/ProblemResponse"
         default:
           description: Default response
           content:
@@ -571,26 +543,15 @@ paths:
               schema:
                 $ref: "#/components/schemas/Problem"
       security: []
-      x-accepts:
-      - application/json
-      x-tags:
-      - tag: Monitoring
 components:
   schemas:
     Enterprise:
       type: object
       properties:
         enterpriseNumber:
-          pattern: "^[0-1]\\d{9}$"
-          type: string
-          description: Identifier issued by CBE for a registered organization
+          $ref: "#/components/schemas/EnterpriseNumber"
         nssoNumber:
-          maximum: 5999999999
-          minimum: 197
-          type: integer
-          description: "Definitive or provisional NSSO number, assigned to each registered\
-            \ employer or local or provincial administration."
-          format: int64
+          $ref: "#/components/schemas/EmployerId"
       description: Minimum one of the two data (nssoNumber (only definitive NSSO number)
         or enterpriseNumber) must be completed.
       anyOf:
@@ -604,10 +565,7 @@ components:
       type: object
       properties:
         ssin:
-          pattern: "^\\d{11}$"
-          type: string
-          description: Social Security Identification Number issued by the National
-            Register or CBSS
+          $ref: "#/components/schemas/Ssin"
     Relation:
       required:
       - declarantReference
@@ -615,9 +573,7 @@ components:
       type: object
       properties:
         declarantReference:
-          maxLength: 64
-          type: string
-          description: relation declarant reference
+          $ref: "#/components/schemas/DeclarantReference"
         type:
           $ref: "#/components/schemas/RelationType"
     Calculation:
@@ -633,10 +589,7 @@ components:
       type: object
       properties:
         id:
-          pattern: "^[\\da-f]{8}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{12}$"
-          type: string
-          description: "Universally Unique Identifier, as standardized in RFC 4122\
-            \ and ISO/IEC 9834-8"
+          $ref: "#/components/schemas/Uuid"
         startDate:
           type: string
           format: date
@@ -785,8 +738,7 @@ components:
       type: object
       properties:
         externalReference:
-          maxLength: 64
-          type: string
+          $ref: "#/components/schemas/ExternalReference"
         type:
           pattern: "^\\d{7}$"
           type: string
@@ -808,8 +760,7 @@ components:
       type: object
       properties:
         externalReference:
-          maxLength: 64
-          type: string
+          $ref: "#/components/schemas/ExternalReference"
         overtimeType:
           type: integer
           enum:
@@ -849,8 +800,7 @@ components:
       type: object
       properties:
         externalReference:
-          maxLength: 64
-          type: string
+          $ref: "#/components/schemas/ExternalReference"
         startDate:
           type: string
           format: date
@@ -858,15 +808,11 @@ components:
           type: string
           format: date
         employmentStatus:
-          maxLength: 5
-          minLength: 5
-          type: string
+          $ref: "#/components/schemas/EmploymentStatus"
         employerClass:
-          pattern: "^\\d{1,5}$"
-          type: string
+          $ref: "#/components/schemas/EmployerClass"
         workerCode:
-          pattern: "^\\d{1,5}$"
-          type: string
+          $ref: "#/components/schemas/WorkerCode"
         flatRateCode:
           pattern: "^\\d{1,5}$"
           type: string
@@ -886,17 +832,13 @@ components:
       type: string
     OperationalSocialFeature:
       required:
-      - contractType
       - endDate
-      - establishmentUnitNumber
       - jointCommissionNumber
       - startDate
-      - weeklyHours
       type: object
       properties:
         externalReference:
-          maxLength: 64
-          type: string
+          $ref: "#/components/schemas/ExternalReference"
         startDate:
           type: string
           format: date
@@ -909,20 +851,12 @@ components:
           - 1
           - 2
         establishmentUnitNumber:
-          pattern: "^[2-8]\\d{9}$"
-          type: string
-          description: Identifier issued by CBE for a site (establishment) of an organization
+          $ref: "#/components/schemas/EstablishmentUnitNumber"
         jointCommissionNumber:
           pattern: "^\\d{3}(\\.\\d{2}){0,2}$"
           type: string
         economicActivity:
-          pattern: "^\\d{5}$"
-          type: string
-          description: |
-            Belgian NACE activity code of 5 digits, as used for NSSO and for VAT purposes (version 2025).
-
-            The meaning of the first four digits are standard across all countries, defined by NACE Revision 2_1.
-            The last digit is defined in the Belgian NACE 2025 list.
+          $ref: "#/components/schemas/NaceBel2025Length5Code"
         educationSectorPaymentMethod:
           type: integer
           enum:
@@ -946,8 +880,7 @@ components:
       type: object
       properties:
         externalReference:
-          maxLength: 64
-          type: string
+          $ref: "#/components/schemas/ExternalReference"
         type:
           type: string
           enum:
@@ -973,8 +906,7 @@ components:
       type: object
       properties:
         externalReference:
-          maxLength: 64
-          type: string
+          $ref: "#/components/schemas/ExternalReference"
         type:
           pattern: "^\\d{1,3}$"
           type: string
@@ -989,15 +921,13 @@ components:
       type: object
       properties:
         externalReference:
-          maxLength: 64
-          type: string
+          $ref: "#/components/schemas/ExternalReference"
         startDate:
           type: string
           format: date
         endDate:
           type: string
           format: date
-      x-parent: true
     OperationalSocialFeaturesDetail:
       type: object
       properties:
@@ -1015,8 +945,6 @@ components:
             minimum: 1
             type: integer
     IdentifyingSocialFeaturesDetail:
-      required:
-      - jobs
       type: object
       properties:
         jobs:
@@ -1096,19 +1024,22 @@ components:
       type: object
       properties:
         externalReference:
-          maxLength: 64
-          type: string
+          $ref: "#/components/schemas/ExternalReference"
         code:
           pattern: "^\\d{1,7}$"
           type: string
         amount:
-          type: integer
-          description: "Money amount in Euro cents, also allows negative amounts."
+          $ref: "#/components/schemas/EuroCentAmount"
         roles:
           maxItems: 2
+          minItems: 1
           type: array
           items:
             $ref: "#/components/schemas/FinancialElementRole"
+        fiscalYear:
+          maximum: 9999
+          minimum: 2000
+          type: integer
         bonusFeatures:
           $ref: "#/components/schemas/BonusFeature"
         voucherFeatures:
@@ -1143,8 +1074,7 @@ components:
       type: object
       properties:
         externalReference:
-          maxLength: 64
-          type: string
+          $ref: "#/components/schemas/ExternalReference"
         allocationFrequency:
           maximum: 99
           minimum: 0
@@ -1156,17 +1086,14 @@ components:
       type: object
       properties:
         externalReference:
-          maxLength: 64
-          type: string
+          $ref: "#/components/schemas/ExternalReference"
         numberOfUnits:
           maximum: 999999999999999
           minimum: 1
           type: integer
           format: int64
         amountPerUnit:
-          minimum: 0
-          type: integer
-          description: Money amount in Euro cents >= 0
+          $ref: "#/components/schemas/EuroCentPositiveAmount"
     SeverancePayFeature:
       required:
       - endDate
@@ -1174,8 +1101,7 @@ components:
       type: object
       properties:
         externalReference:
-          maxLength: 64
-          type: string
+          $ref: "#/components/schemas/ExternalReference"
         startDate:
           type: string
           format: date
@@ -1192,8 +1118,7 @@ components:
       type: object
       properties:
         externalReference:
-          maxLength: 64
-          type: string
+          $ref: "#/components/schemas/ExternalReference"
         date:
           type: string
           format: date
@@ -1214,8 +1139,7 @@ components:
       type: object
       properties:
         externalReference:
-          maxLength: 64
-          type: string
+          $ref: "#/components/schemas/ExternalReference"
         startDate:
           type: string
           format: date
@@ -1223,9 +1147,7 @@ components:
           type: string
           format: date
         employmentStatus:
-          maxLength: 5
-          minLength: 5
-          type: string
+          $ref: "#/components/schemas/EmploymentStatus"
         civilStatusType:
           type: integer
           enum:
@@ -1299,8 +1221,7 @@ components:
       type: object
       properties:
         externalReference:
-          maxLength: 64
-          type: string
+          $ref: "#/components/schemas/ExternalReference"
         numberOfPaidHours:
           maximum: 99999
           minimum: 1
@@ -1314,8 +1235,7 @@ components:
       type: object
       properties:
         externalReference:
-          maxLength: 64
-          type: string
+          $ref: "#/components/schemas/ExternalReference"
         vacationHoursBalance:
           maximum: 67200
           minimum: 0
@@ -1330,12 +1250,9 @@ components:
       type: object
       properties:
         enterpriseNumber:
-          pattern: "^[0-1]\\d{9}$"
-          type: string
-          description: Identifier issued by CBE for a registered organization
+          $ref: "#/components/schemas/EnterpriseNumber"
         externalReference:
-          maxLength: 64
-          type: string
+          $ref: "#/components/schemas/ExternalReference"
     PageLinks:
       type: object
       properties:
@@ -1397,6 +1314,12 @@ components:
           description: A list of relation types you want to search for.
           items:
             $ref: "#/components/schemas/RelationType"
+        frequencies:
+          maxItems: 5
+          type: array
+          description: A list of frequencies you want to search for.
+          items:
+            $ref: "#/components/schemas/CalculationFrequency"
         from:
           type: string
           description: The start date (inclusive) of the search window. Required if
@@ -1453,10 +1376,7 @@ components:
             situation of calculation results of salary data for a given id.)
           format: uri
         id:
-          pattern: "^[\\da-f]{8}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{12}$"
-          type: string
-          description: "Universally Unique Identifier, as standardized in RFC 4122\
-            \ and ISO/IEC 9834-8"
+          $ref: "#/components/schemas/Uuid"
         startDate:
           type: string
           format: date
@@ -1488,18 +1408,13 @@ components:
       type: object
       properties:
         id:
-          pattern: "^[\\da-f]{8}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{12}$"
-          type: string
-          description: "Universally Unique Identifier, as standardized in RFC 4122\
-            \ and ISO/IEC 9834-8"
+          $ref: "#/components/schemas/Uuid"
         enterprise:
           $ref: "#/components/schemas/Enterprise"
         naturalPerson:
           $ref: "#/components/schemas/NaturalPerson"
         declarantReference:
-          maxLength: 64
-          type: string
-          description: relation declarant reference
+          $ref: "#/components/schemas/DeclarantReference"
         channel:
           type: string
           description: The channel through which the input was submitted.
@@ -1578,16 +1493,18 @@ components:
         instance: urn:uuid:123456-1234-1235-4567489798
         issues:
         - type: urn:problem-type:belgif:input-validation:schemaViolation
+          href: https://www.belgif.be/specification/rest/api-guide/issues/schemaViolation.html
           detail: exampleNumericProperty with value xyz should be numeric
           in: path
           name: exampleNumericProperty
           value: abc
         - type: urn:problem-type:belgif:input-validation:schemaViolation
+          href: https://www.belgif.be/specification/rest/api-guide/issues/schemaViolation.html
           title: Input isn't valid with respect to schema
           detail: "examplePropertyWithPattern a2345678901 doesn't match pattern '^\\\
             d{11}$'"
           in: body
-          name: "items[0].examplePropertyWithPattern"
+          name: /items/0/examplePropertyWithPattern
           value: a2345678901
       allOf:
       - $ref: "#/components/schemas/Problem"
@@ -1615,7 +1532,6 @@ components:
         Additional properties specific to the issue type may be present.
       allOf:
       - $ref: "#/components/schemas/Problem"
-      x-parent: true
     Uuid:
       pattern: "^[\\da-f]{8}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{4}-[\\da-f]{12}$"
       type: string
