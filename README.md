@@ -15,6 +15,7 @@
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
 | Technical Schema    | [Retrieve the OpenAPI YAML](https://raw.githubusercontent.com/smals-belgium/egov3-services-catalog/main/technical_specs/salaryData-v1.yaml) |
 | Technical Schema UI | [Pretty print of the schema](https://smals-belgium.github.io/egov3-services-catalog/?spec=salary)                                           |
+| Issue status tracking | [Ongoing issues](https://raw.githubusercontent.com/smals-belgium/egov3-services-catalog/main/technical_specs/LTDS%20-%20Issue%20Status%20Tracking.pdf) |
 
 | Type                           | Documentation FR                                                                                                                                                                | Documentatie NL                                                                                                                                                           |
 |--------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
