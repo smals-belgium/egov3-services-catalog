@@ -35,7 +35,7 @@
 
 | Type               | Documentation FR                                                                                                                                       | Documentatie NL                                                                                                                                        |
 |---------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Batch Documentation | [Voir la documentation](https://raw.githubusercontent.com/smals-belgium/egov3-services-catalog/main/technical_specs/Echange%20d%C3%A9clarant%20-%20Stream%20via%20SFTP.pdf)      | [Bekijk de documentatie](https://raw.githubusercontent.com/smals-belgium/egov3-services-catalog/main/technical_specs/uitwisseling-aangevers-rsz-via-sftp_no-markup.pdf) |
+| Batch Documentation | [Voir la documentation](https://raw.githubusercontent.com/smals-belgium/egov3-services-catalog/main/technical_specs/Echange%20d%C3%A9clarant%20-%20Stream%20via%20SFTP.pdf)      | [Bekijk de documentatie](https://raw.githubusercontent.com/smals-belgium/egov3-services-catalog/main/technical_specs/uitwisseling-aangevers-rsz-via-sftp.pdf) |
 
 # AMD (Asynchronous Message Delivery)
 
