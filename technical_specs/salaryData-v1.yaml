@@ -5,7 +5,7 @@ info:
   contact:
     name: LTDS team
     email: LTDS@smals.be
-  version: 1.0.4
+  version: 1.0.5
 servers:
 - url: https://services.socialsecurity.be/REST/salaryData/v1
 tags:
@@ -660,10 +660,10 @@ components:
       maxLength: 64
       type: string
     EmployerClass:
-      pattern: "^\\d{1,5}$"
+      pattern: "^\\d{5}$"
       type: string
     WorkerCode:
-      pattern: "^\\d{1,5}$"
+      pattern: "^\\d{5}$"
       type: string
     ProcessingStatus:
       type: string
@@ -697,6 +697,7 @@ components:
             enum:
             - blocking
             - notBlocking
+            - warning
             - informative
     MessageType:
       type: string
@@ -771,6 +772,7 @@ components:
           enum:
           - 1
           - 2
+          - 3
         overtimeIncludedInCalendar:
           type: integer
           enum:
@@ -790,6 +792,9 @@ components:
           type: integer
           enum:
           - 1
+        absenceType:
+          pattern: "^\\d{3}$"
+          type: string
     IdentifyingSocialFeature:
       required:
       - employerClass
@@ -814,7 +819,7 @@ components:
         workerCode:
           $ref: "#/components/schemas/WorkerCode"
         flatRateCode:
-          pattern: "^\\d{1,5}$"
+          pattern: "^\\d{5}$"
           type: string
         operationalSocialFeatures:
           type: array
@@ -908,7 +913,7 @@ components:
         externalReference:
           $ref: "#/components/schemas/ExternalReference"
         type:
-          pattern: "^\\d{1,3}$"
+          pattern: "^\\d{3}$"
           type: string
         percentage:
           maximum: 10000
@@ -1056,6 +1061,8 @@ components:
           $ref: "#/components/schemas/PaidRightBalanceFeature"
         vacationPayFeatures:
           $ref: "#/components/schemas/VacationPayFeature"
+        vacationPayContributionFeatures:
+          $ref: "#/components/schemas/VacationPayContributionFeature"
     FinancialElementRole:
       type: integer
       enum:
@@ -1244,6 +1251,19 @@ components:
           maximum: 67200
           minimum: 0
           type: integer
+    VacationPayContributionFeature:
+      required:
+      - type
+      type: object
+      properties:
+        type:
+          type: integer
+          enum:
+          - 1
+          - 2
+          - 3
+        externalReference:
+          $ref: "#/components/schemas/ExternalReference"
     UsingEmployer:
       required:
       - enterpriseNumber
